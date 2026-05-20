@@ -1,22 +1,21 @@
-// Homepage — remplacer par le composant Claude Design
 import { api } from '@/lib/woocommerce';
+import HomePage from '@/components/HomePage';
 
-export default async function HomePage() {
+export const dynamic = 'force-dynamic'; // render at request time, not build time
+export const revalidate = 60;           // cache 60s on Netlify
+
+export default async function Page() {
   const [newProducts, deals, categories] = await Promise.all([
-    api.products.latest(8),
-    api.products.onSale(8),
-    api.categories.top(10),
+    api.products.latest(6).catch(() => []),
+    api.products.onSale(6).catch(() => []),
+    api.categories.top(8).catch(() => []),
   ]);
 
   return (
-    <main>
-      {/* TODO: coller ici le composant Claude Design */}
-      <pre style={{ padding: 20, fontFamily: 'monospace', fontSize: 13 }}>
-        ✅ API connectée{'\n'}
-        Nouveautés : {newProducts.length} produits{'\n'}
-        Bons plans  : {deals.length} produits{'\n'}
-        Catégories  : {categories.length}
-      </pre>
-    </main>
+    <HomePage
+      newProducts={newProducts}
+      deals={deals}
+      categories={categories}
+    />
   );
 }
