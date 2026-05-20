@@ -285,6 +285,24 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
   const nouveautes = useMemo(() => newProducts.map(mapProduct), [newProducts]);
   const bonsPlans  = useMemo(() => deals.map(mapProduct), [deals]);
 
+  const spotlightData = useMemo(() => {
+    const prods = [...newProducts, ...deals].map(p => ({
+      id: p.id,
+      name: p.name,
+      images: p.images,
+      meta_data: p.meta_data,
+      price: p.price,
+      regular_price: p.regular_price,
+      categories: p.categories,
+      rating: parseFloat(p.average_rating) || 0,
+      rating_count: p.rating_count,
+    }));
+    const catMap = new Map<string, string>();
+    prods.forEach(p => p.categories.forEach((c: { slug: string; name: string }) => catMap.set(c.slug, c.name)));
+    const tabs = [...catMap.entries()].slice(0, 6).map(([slug, label]) => ({ slug, label }));
+    return { prods, tabs };
+  }, [newProducts, deals]);
+
   const [activeCat, setActiveCat] = useState(categories[0]?.slug || 'phone');
   const [cart,      setCart]      = useState<Record<string, number>>({});
   const [wishlist,  setWishlist]  = useState<Record<string, boolean>>({});
@@ -367,19 +385,11 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
         )}
 
         {/* Spotlight Deals */}
-        {[...nouveautes, ...bonsPlans].length > 0 && (
+        {spotlightData.prods.length > 0 && (
           <div style={{ padding: '8px 0 32px' }}>
             <SpotlightDeals
-              products={[...nouveautes, ...bonsPlans].map(p => ({
-                id: p.wcId,
-                name: p.title,
-                images: p.img ? [{ src: p.img, alt: p.title }] : [],
-                price: String(p.price),
-                regular_price: String(p.old),
-                categories: [{ id: p.art, name: p.brand || 'Général', slug: p.art }],
-                rating: p.rating,
-                rating_count: p.reviews,
-              }))}
+              products={spotlightData.prods}
+              tabs={spotlightData.tabs}
               title="Meilleures Offres"
               currency="TND"
             />

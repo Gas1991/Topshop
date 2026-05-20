@@ -173,14 +173,13 @@ const SpotlightDeals: React.FC<SpotlightDealsProps> = ({
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [pill, setPill] = useState<{ x: number; w: number }>({ x: 0, w: 0 });
 
-  // Filter
-  const filtered = useMemo(
-    () =>
-      products.filter((p) =>
-        p.categories.some((c) => c.slug === active)
-      ),
-    [products, active]
-  );
+  // Filter — fall back to all products if nothing matches the active tab
+  const filtered = useMemo(() => {
+    const match = products.filter((p) =>
+      p.categories.some((c) => c.slug === active)
+    );
+    return match.length > 0 ? match : products;
+  }, [products, active]);
 
   // Tab pill position
   useEffect(() => {
