@@ -7,6 +7,9 @@ import { I, CatIcon } from './icons';
 import ProductArt from './product-art.jsx';
 import type { WCProduct, WCCategory } from '@/lib/woocommerce';
 import { getDiscount, getBrand } from '@/lib/woocommerce';
+import SpotlightDeals from './SpotlightDeals';
+import PromoBanners from './PromoBanners';
+import CategoryRail from './CategoryRail';
 
 /* ── Types ────────────────────────────────────────────────────── */
 interface Product {
@@ -355,6 +358,51 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
             </div>
           </section>
         )}
+
+        {/* Category Rail */}
+        {categories.length > 0 && (
+          <div style={{ padding: '32px 0' }}>
+            <CategoryRail categories={categories} title="Toutes les catégories" />
+          </div>
+        )}
+
+        {/* Spotlight Deals */}
+        {[...nouveautes, ...bonsPlans].length > 0 && (
+          <div style={{ padding: '8px 0 32px' }}>
+            <SpotlightDeals
+              products={[...nouveautes, ...bonsPlans].map(p => ({
+                id: p.wcId,
+                name: p.title,
+                images: p.img ? [{ src: p.img, alt: p.title }] : [],
+                price: String(p.price),
+                regular_price: String(p.old),
+                categories: [{ id: p.art, name: p.brand || 'Général', slug: p.art }],
+                rating: p.rating,
+                rating_count: p.reviews,
+              }))}
+              title="Meilleures Offres"
+              currency="TND"
+            />
+          </div>
+        )}
+
+        {/* Promo Banners */}
+        <div style={{ padding: '8px 0 32px' }}>
+          <PromoBanners
+            heading="Offres exclusives"
+            banners={[
+              { title: 'Samsung Galaxy S25', eyebrow: 'Smartphones', discount: '15%', code: 'SAMSUNG15',
+                image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=80',
+                bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%)', cta: 'Voir les offres' },
+              { title: 'MacBook Air M3', eyebrow: 'Laptops', discount: '20%', code: 'APPLE20',
+                image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=80',
+                bg: 'linear-gradient(135deg, #0b3b8c 0%, #1a56c4 100%)', cta: 'Découvrir' },
+              { title: 'Casques Sony WH', eyebrow: 'Audio', discount: '30%', code: 'AUDIO30',
+                image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&q=80',
+                bg: 'linear-gradient(135deg, #4a0e8f 0%, #7b2ff7 100%)', cta: 'Acheter maintenant' },
+            ]}
+          />
+        </div>
 
         {/* Brand strip */}
         <div className="brand-strip">
