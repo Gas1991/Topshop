@@ -396,23 +396,33 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
           </div>
         )}
 
-        {/* Promo Banners */}
-        <div style={{ padding: '8px 0 32px' }}>
-          <PromoBanners
-            heading="Offres exclusives"
-            banners={[
-              { title: 'Samsung Galaxy S25', eyebrow: 'Smartphones', discount: '15%', code: 'SAMSUNG15',
-                image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=80',
-                bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%)', cta: 'Voir les offres' },
-              { title: 'MacBook Air M3', eyebrow: 'Laptops', discount: '20%', code: 'APPLE20',
-                image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=80',
-                bg: 'linear-gradient(135deg, #0b3b8c 0%, #1a56c4 100%)', cta: 'Découvrir' },
-              { title: 'Casques Sony WH', eyebrow: 'Audio', discount: '30%', code: 'AUDIO30',
-                image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&q=80',
-                bg: 'linear-gradient(135deg, #4a0e8f 0%, #7b2ff7 100%)', cta: 'Acheter maintenant' },
-            ]}
-          />
-        </div>
+        {/* Promo Banners — real deals */}
+        {deals.length > 0 && (
+          <div style={{ padding: '8px 0 32px' }}>
+            <PromoBanners
+              heading="Offres exclusives"
+              banners={deals.slice(0, 3).map((p, i) => {
+                const bgs = [
+                  'linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%)',
+                  'linear-gradient(135deg, #0b3b8c 0%, #1a56c4 100%)',
+                  'linear-gradient(135deg, #4a0e8f 0%, #7b2ff7 100%)',
+                ];
+                const disc = getDiscount(p);
+                const img = getProductImage(p);
+                return {
+                  title: p.name,
+                  eyebrow: p.categories[0]?.name || 'Promo',
+                  discount: disc > 0 ? `${disc}%` : undefined,
+                  code: p.sku || p.slug.slice(0, 10).toUpperCase(),
+                  image: img,
+                  bg: bgs[i % bgs.length],
+                  cta: 'Voir le produit',
+                  link: `/product/${p.slug}`,
+                };
+              })}
+            />
+          </div>
+        )}
 
         {/* Brand strip */}
         <div className="brand-strip">

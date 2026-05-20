@@ -11,6 +11,7 @@ type Banner = {
   eyebrow?: string;    // small label above title, e.g. "Smartphones"
   discount?: string;   // big number, e.g. "15%"
   cta?: string;        // optional button label, defaults to "Shop now"
+  link?: string;       // product URL
 };
 
 type PromoBannersProps = {
@@ -69,7 +70,7 @@ function CopyableCode({ code, accent }: { code: string; accent: string }) {
 }
 
 function BannerCard({ banner, index }: { banner: Banner; index: number }) {
-  const { title, image, code, bg, eyebrow, discount, cta } = banner;
+  const { title, image, code, bg, eyebrow, discount, cta, link } = banner;
 
   // Accent color for the copied-code button text, derived per index.
   const accents = ["#0f172a", "#0b3b8c", "#5b21b6"];
@@ -77,7 +78,7 @@ function BannerCard({ banner, index }: { banner: Banner; index: number }) {
 
   return (
     <a
-      href="#"
+      href={link || '#'}
       className="group relative block overflow-hidden rounded-2xl ring-1 ring-black/5 transition-all duration-500 ease-out will-change-transform hover:-translate-y-2 hover:shadow-[0_30px_60px_-20px_rgba(0,0,0,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
       style={{ background: bg }}
     >

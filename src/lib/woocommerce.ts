@@ -29,6 +29,7 @@ export interface WCProduct {
   id: number;
   name: string;
   slug: string;
+  sku: string;
   permalink: string;
   price: string;
   regular_price: string;

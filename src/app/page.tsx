@@ -8,14 +8,19 @@ export default async function Page() {
   const [newProducts, deals, categories] = await Promise.all([
     api.products.latest(6).catch(() => []),
     api.products.onSale(6).catch(() => []),
-    api.categories.top(8).catch(() => []),
+    api.categories.top(20).catch(() => []),
   ]);
+
+  const BAD = ['non-classe', 'other-categories', 'uncategorized'];
+  const cleanCategories = categories.filter(c =>
+    !BAD.some(b => c.slug.startsWith(b)) && !c.name.includes('|') && c.count > 0
+  );
 
   return (
     <HomePage
       newProducts={newProducts}
       deals={deals}
-      categories={categories}
+      categories={cleanCategories}
     />
   );
 }
