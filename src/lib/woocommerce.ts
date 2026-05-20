@@ -42,6 +42,7 @@ export interface WCProduct {
   stock_status: string;
   short_description: string;
   description: string;
+  meta_data: { key: string; value: string }[];
 }
 
 export interface WCCategory {
@@ -54,6 +55,12 @@ export interface WCCategory {
 }
 
 /* ── Helpers ────────────────────────────────────────────────────── */
+export function getProductImage(p: WCProduct): string {
+  if (p.images?.[0]?.src) return p.images[0].src;
+  const meta = p.meta_data?.find(m => m.key === '_toprix_image_url');
+  return meta?.value || '';
+}
+
 export function getDiscount(p: WCProduct): number {
   const price   = parseFloat(p.price);
   const regular = parseFloat(p.regular_price);

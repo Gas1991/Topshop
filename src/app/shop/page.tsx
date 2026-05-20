@@ -1,4 +1,4 @@
-import { api } from '@/lib/woocommerce';
+import { api, getProductImage } from '@/lib/woocommerce';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -30,7 +30,7 @@ export default async function ShopPage({
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
           {products.map((p) => {
-            const img = p.images?.[0]?.src;
+            const img = getProductImage(p);
             const disc = p.regular_price && parseFloat(p.regular_price) > parseFloat(p.price)
               ? Math.round((parseFloat(p.regular_price) - parseFloat(p.price)) / parseFloat(p.regular_price) * 100)
               : 0;

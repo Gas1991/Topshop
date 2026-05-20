@@ -6,7 +6,7 @@ import { I, CatIcon } from './icons';
 // @ts-ignore
 import ProductArt from './product-art.jsx';
 import type { WCProduct, WCCategory } from '@/lib/woocommerce';
-import { getDiscount, getBrand } from '@/lib/woocommerce';
+import { getDiscount, getBrand, getProductImage } from '@/lib/woocommerce';
 import SpotlightDeals from './SpotlightDeals';
 import PromoBanners from './PromoBanners';
 import CategoryRail from './CategoryRail';
@@ -47,7 +47,7 @@ function mapProduct(p: WCProduct): Product {
   const regular = parseFloat(p.regular_price) || price;
   const disc = getDiscount(p);
   const brand = getBrand(p);
-  const img = p.images?.[0]?.src || null;
+  const img = getProductImage(p) || null;
   return {
     id: `wc_${p.id}`, wcId: p.id,
     art: 'phone', brand,

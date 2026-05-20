@@ -15,6 +15,7 @@ export type WCProduct = {
   id: number | string;
   name: string;
   images: WCImage[];
+  meta_data?: { key: string; value: string }[];
   price: string;            // e.g. "999"
   regular_price: string;    // e.g. "1199"
   categories: WCCategory[];
@@ -98,7 +99,7 @@ const Stars: React.FC<{ value: number; count?: number }> = ({ value, count }) =>
 const ProductCard: React.FC<{ p: WCProduct; currency: string }> = ({ p, currency }) => {
   const off = discount(p.price, p.regular_price);
   const badge = p.categories[0]?.name ?? "Deal";
-  const img = p.images[0];
+  const imgSrc = p.images[0]?.src || p.meta_data?.find(m => m.key === '_toprix_image_url')?.value || '';
   return (
     <article className="group relative w-[244px] shrink-0 snap-start">
       {/* Floating category badge */}
@@ -117,10 +118,10 @@ const ProductCard: React.FC<{ p: WCProduct; currency: string }> = ({ p, currency
               -{off}%
             </span>
           )}
-          {img ? (
+          {imgSrc ? (
             <img
-              src={img.src}
-              alt={img.alt ?? p.name}
+              src={imgSrc}
+              alt={p.name}
               loading="lazy"
               className="max-h-[190px] w-auto object-contain drop-shadow-[0_18px_18px_rgba(20,30,60,0.18)] group-hover:scale-[1.04] transition-transform duration-500 ease-out"
             />

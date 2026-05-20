@@ -1,4 +1,4 @@
-import { api } from '@/lib/woocommerce';
+import { api, getProductImage } from '@/lib/woocommerce';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -9,7 +9,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const product = await api.products.bySlug(slug).catch(() => null);
   if (!product) notFound();
 
-  const img = product.images?.[0]?.src;
+  const img = getProductImage(product);
   const price = parseFloat(product.price);
   const regular = parseFloat(product.regular_price);
   const disc = regular > price ? Math.round((regular - price) / regular * 100) : 0;
