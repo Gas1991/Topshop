@@ -417,7 +417,7 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
                   image: img,
                   bg: bgs[i % bgs.length],
                   cta: 'Voir le produit',
-                  link: `/product/${p.slug}`,
+                  link: `/produit/${p.slug}`,
                 };
               })}
             />

@@ -313,7 +313,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
               <button className={`pp-btn pp-btn-primary${added ? ' added' : ''}`} onClick={handleAdd}>
                 {added ? '✓ Ajouté au panier !' : '🛒 Ajouter au panier'}
               </button>
-              <a href={product.permalink} target="_blank" rel="noopener noreferrer" className="pp-btn pp-btn-secondary">
+              <a href={`/produit/${product.slug}`} target="_blank" rel="noopener noreferrer" className="pp-btn pp-btn-secondary">
                 ⚡ Acheter maintenant
               </a>
               <button className={`pp-btn pp-btn-tertiary${wished ? ' on' : ''}`} onClick={() => setWished(!wished)}>
@@ -385,7 +385,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
                   {product.rating_count > 0 ? `${product.rating_count} avis clients` : 'Aucun avis pour le moment'}
                 </div>
                 <a
-                  href={product.permalink}
+                  href={`/produit/${product.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ color: '#FFB800', fontWeight: 700, fontSize: 14, marginTop: 12, display: 'inline-block' }}
@@ -408,7 +408,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
           {added ? '✓ Ajouté !' : '🛒 Ajouter au panier'}
         </button>
         <a
-          href={product.permalink}
+          href={`/produit/${product.slug}`}
           target="_blank"
           rel="noopener noreferrer"
           className="pp-btn pp-btn-secondary"

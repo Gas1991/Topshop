@@ -23,7 +23,7 @@ function ProductCard({ p }: { p: WCProduct }) {
   }
 
   return (
-    <Link href={`/product/${p.slug}`} className="sc-card">
+    <Link href={`/produit/${p.slug}`} className="sc-card">
       <div className="sc-card-img">
         {disc > 0 && <span className="sc-badge">-{disc}%</span>}
         <button
