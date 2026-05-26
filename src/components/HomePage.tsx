@@ -161,27 +161,33 @@ function Hero({ featured }: { featured: Product | null }) {
       <div className="side-banners">
         <div className="side-card a">
           <div className="text">
-            <div className="sm">Apple Days</div>
-            <div className="lg">iPhone dès<br />2 999 TND</div>
+            <div className="sm">Xiaomi Days</div>
+            <div className="lg">Air Fryer dès<br />379 TND</div>
             <div className="cta">Découvrir <I.chevR s={12} /></div>
           </div>
-          <div className="ic" style={{ width: 90 }}>{ProductArt.phone}</div>
+          <div className="ic" style={{ width: 100, height: 100, flexShrink: 0 }}>
+            <img src="https://spacenet.tn/245605-large_default/air-fryer-xiaomi-55031-smart-55l-1600w-blanc.jpg" alt="Xiaomi Air Fryer" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
         </div>
         <div className="side-card b">
           <div className="text">
-            <div className="sm">Gaming Week</div>
-            <div className="lg">Manettes jusqu'à -40%</div>
+            <div className="sm">Promo Cuisson</div>
+            <div className="lg">Friteuses jusqu'à -40%</div>
             <div className="cta">Voir <I.chevR s={12} /></div>
           </div>
-          <div className="ic" style={{ width: 110 }}>{ProductArt.controller}</div>
+          <div className="ic" style={{ width: 100, height: 100, flexShrink: 0 }}>
+            <img src="https://spacenet.tn/59737-large_default/-friteuse-gold-master-1200w-silver-gm-419.jpg" alt="Friteuse" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
         </div>
         <div className="side-card c">
           <div className="text">
-            <div className="sm">Audio Mania</div>
-            <div className="lg">Casques Sony, JBL — Promo</div>
+            <div className="sm">Réfrigération</div>
+            <div className="lg">Frigos NoFrost — Promo</div>
             <div className="cta">Acheter <I.chevR s={12} /></div>
           </div>
-          <div className="ic" style={{ width: 100 }}>{ProductArt.headphones}</div>
+          <div className="ic" style={{ width: 100, height: 100, flexShrink: 0 }}>
+            <img src="https://spacenet.tn/242428-large_default/refrigerateur-telefunken-frig-543n-524l-nofrost-noir.jpg" alt="Réfrigérateur" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
         </div>
       </div>
     </>
