@@ -14,12 +14,13 @@ export type WCCategory = { id: number | string; name: string; slug: string };
 export type WCProduct = {
   id: number | string;
   name: string;
+  slug: string;
   images: WCImage[];
   meta_data?: { key: string; value: string }[];
-  price: string;            // e.g. "999"
-  regular_price: string;    // e.g. "1199"
+  price: string;
+  regular_price: string;
   categories: WCCategory[];
-  rating?: number;          // 0-5
+  rating?: number;
   rating_count?: number;
 };
 
@@ -110,8 +111,8 @@ const ProductCard: React.FC<{ p: WCProduct; currency: string }> = ({ p, currency
         </span>
       </div>
 
-      <div className="relative rounded-3xl bg-white/70 backdrop-blur-sm ring-1 ring-white/80 shadow-[0_10px_30px_-12px_rgba(20,30,60,0.18)] hover:shadow-[0_18px_40px_-12px_rgba(20,30,60,0.25)] hover:-translate-y-0.5 transition-all duration-300 p-4 pt-7">
-        {/* Image - tall, no background */}
+      <a href={`/produit/${p.slug}`} className="block relative rounded-3xl bg-white/70 backdrop-blur-sm ring-1 ring-white/80 shadow-[0_10px_30px_-12px_rgba(20,30,60,0.18)] hover:shadow-[0_18px_40px_-12px_rgba(20,30,60,0.25)] hover:-translate-y-0.5 transition-all duration-300 p-4 pt-7 no-underline text-inherit">
+        {/* Image */}
         <div className="relative h-[200px] flex items-center justify-center overflow-hidden">
           {off > 0 && (
             <span className="absolute top-1 right-1 px-2 py-0.5 rounded-full bg-[#111] text-white text-[10px] font-bold tracking-tight">
@@ -124,13 +125,14 @@ const ProductCard: React.FC<{ p: WCProduct; currency: string }> = ({ p, currency
               alt={p.name}
               loading="lazy"
               className="max-h-[190px] w-auto object-contain drop-shadow-[0_18px_18px_rgba(20,30,60,0.18)] group-hover:scale-[1.04] transition-transform duration-500 ease-out"
+              style={{ mixBlendMode: 'multiply' }}
             />
           ) : (
             <div className="h-full w-full rounded-xl bg-neutral-100" />
           )}
         </div>
 
-        {/* Name - 2 lines clamp */}
+        {/* Name */}
         <h3 className="mt-3 h-[40px] text-[14px] leading-[20px] font-semibold text-neutral-900 line-clamp-2">
           {p.name}
         </h3>
@@ -151,7 +153,7 @@ const ProductCard: React.FC<{ p: WCProduct; currency: string }> = ({ p, currency
         <div className="mt-2">
           <Stars value={p.rating ?? 4.5} count={p.rating_count} />
         </div>
-      </div>
+      </a>
     </article>
   );
 };
@@ -166,19 +168,20 @@ const SpotlightDeals: React.FC<SpotlightDealsProps> = ({
   currency = "TND",
   tabs = DEFAULT_TABS,
 }) => {
-  const [active, setActive] = useState<string>(tabs[0]?.slug ?? "");
+  const [active, setActive] = useState<string>('tous');
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(true);
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [pill, setPill] = useState<{ x: number; w: number }>({ x: 0, w: 0 });
 
-  // Filter — fall back to all products if nothing matches the active tab
+  // Filter — "tous" shows everything, others filter by category
   const filtered = useMemo(() => {
+    if (active === 'tous') return products;
     const match = products.filter((p) =>
       p.categories.some((c) => c.slug === active)
     );
-    return match.length > 0 ? match : products;
+    return match.length >= 3 ? match : products;
   }, [products, active]);
 
   // Tab pill position
@@ -242,7 +245,7 @@ const SpotlightDeals: React.FC<SpotlightDealsProps> = ({
             className="absolute top-1.5 bottom-1.5 rounded-full bg-[#FFB800] shadow-[0_4px_14px_rgba(255,184,0,0.55)] transition-all duration-500 ease-[cubic-bezier(.6,.2,.1,1)]"
             style={{ transform: `translateX(${pill.x - 6}px)`, width: pill.w }}
           />
-          {tabs.map((t) => {
+          {[{ slug: 'tous', label: 'Tous' }, ...tabs].map((t) => {
             const isActive = t.slug === active;
             return (
               <button

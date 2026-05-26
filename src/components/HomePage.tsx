@@ -10,11 +10,13 @@ import { getDiscount, getBrand, getProductImage } from '@/lib/woocommerce';
 import SpotlightDeals from './SpotlightDeals';
 import PromoBanners from './PromoBanners';
 import CategoryRail from './CategoryRail';
+import { useCart } from '@/lib/cart';
 
 /* ── Types ────────────────────────────────────────────────────── */
 interface Product {
   id: string;
   wcId: number;
+  slug: string;
   art: string;
   brand: string;
   title: string;
@@ -49,7 +51,7 @@ function mapProduct(p: WCProduct): Product {
   const brand = getBrand(p);
   const img = getProductImage(p) || null;
   return {
-    id: `wc_${p.id}`, wcId: p.id,
+    id: `wc_${p.id}`, wcId: Number(p.id), slug: p.slug,
     art: 'phone', brand,
     title: p.name,
     rating: parseFloat(p.average_rating) || 0,
@@ -57,7 +59,7 @@ function mapProduct(p: WCProduct): Product {
     price, old: regular, disc,
     express: false, freeShip: true,
     badge: disc >= 30 ? 'PROMO' : disc >= 20 ? 'BON PLAN' : '',
-    img, link: p.permalink,
+    img, link: `/produit/${p.slug}`,
   };
 }
 
@@ -132,12 +134,12 @@ function Hero({ featured }: { featured: Product | null }) {
       <section className="hero">
         <div className="pattern" />
         <div className="left">
-          <span className="eyebrow">Marketplace Tech — Tunisie</span>
-          <h1>Meilleures<br /><span className="hl">Offres</span> Tech.</h1>
-          <p>Les meilleurs prix sur MacBook, iPhone, Samsung, Sony et plus. Livraison rapide partout en Tunisie.</p>
+          <span className="eyebrow">Marketplace Électroménager — Tunisie</span>
+          <h1>Meilleures<br /><span className="hl">Offres</span> du Marché.</h1>
+          <p>Les meilleurs prix sur réfrigérateurs, friteuses, lave-vaisselle, climatiseurs et plus. Livraison rapide partout en Tunisie.</p>
           <div className="meta">
             <div className="m"><span className="k">Jusqu'à</span><span className="v">50<span>%</span></span></div>
-            <div className="m"><span className="k">Produits</span><span className="v">+12 000</span></div>
+            <div className="m"><span className="k">Produits</span><span className="v">+44 000</span></div>
           </div>
           <div className="actions">
             <Link className="btn-yellow" href="/shop">Voir les produits <I.chevR s={14} /></Link>
@@ -153,7 +155,7 @@ function Hero({ featured }: { featured: Product | null }) {
         </div>
         <div className="price-burst">
           <span className="top">DÈS</span>
-          <span className="big">999</span>
+          <span className="big">75</span>
           <span className="sub">TND</span>
         </div>
       </section>
@@ -199,7 +201,7 @@ function ProductImage({ p }: { p: Product }) {
   const [err, setErr] = useState(false);
   if (!p.img || err) return (ProductArt as Record<string, React.ReactNode>)[p.art] || ProductArt.phone;
   return <img src={p.img} alt={p.title}
-    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+    style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }}
     onError={() => setErr(true)} />;
 }
 
@@ -295,6 +297,7 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
     const prods = [...newProducts, ...deals].map(p => ({
       id: p.id,
       name: p.name,
+      slug: p.slug,
       images: p.images,
       meta_data: p.meta_data,
       price: p.price,
@@ -309,24 +312,35 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
     return { prods, tabs };
   }, [newProducts, deals]);
 
+  const { addItem, removeItem, updateQty, items: cartItems } = useCart();
   const [activeCat, setActiveCat] = useState(categories[0]?.slug || 'phone');
-  const [cart,      setCart]      = useState<Record<string, number>>({});
   const [wishlist,  setWishlist]  = useState<Record<string, boolean>>({});
   const [toast,     setToast]     = useState<string | null>(null);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 1800); };
 
+  const getQty = (wcId: number) => cartItems.find(i => i.id === wcId)?.qty ?? 0;
+
   const onAdd = (id: string) => {
-    setCart((c) => ({ ...c, [id]: (c[id] || 0) + 1 }));
     const p = [...nouveautes, ...bonsPlans].find((x) => x.id === id);
-    if (p) showToast(`Ajouté: ${p.title.slice(0, 36)}…`);
+    if (!p) return;
+    addItem({ id: p.wcId, slug: p.slug, name: p.title, price: p.price, img: p.img || '' });
+    showToast(`Ajouté: ${p.title.slice(0, 36)}…`);
   };
-  const onInc = (id: string) => setCart((c) => ({ ...c, [id]: (c[id] || 0) + 1 }));
-  const onDec = (id: string) => setCart((c) => {
-    const n = (c[id] || 0) - 1, cp = { ...c };
-    if (n <= 0) delete cp[id]; else cp[id] = n;
-    return cp;
-  });
+  const onInc = (id: string) => {
+    const p = [...nouveautes, ...bonsPlans].find((x) => x.id === id);
+    if (!p) return;
+    const cur = getQty(p.wcId);
+    if (cur > 0) updateQty(p.wcId, cur + 1);
+    else addItem({ id: p.wcId, slug: p.slug, name: p.title, price: p.price, img: p.img || '' });
+  };
+  const onDec = (id: string) => {
+    const p = [...nouveautes, ...bonsPlans].find((x) => x.id === id);
+    if (!p) return;
+    const cur = getQty(p.wcId);
+    if (cur <= 1) removeItem(p.wcId);
+    else updateQty(p.wcId, cur - 1);
+  };
   const onWish = (id: string) => setWishlist((w) => ({ ...w, [id]: !w[id] }));
 
   return (
@@ -350,7 +364,7 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
             </div>
             <div className="product-row">
               {nouveautes.map((p) => (
-                <ProductCard key={p.id} p={p} qty={cart[p.id] || 0}
+                <ProductCard key={p.id} p={p} qty={getQty(p.wcId)}
                   onAdd={onAdd} onInc={onInc} onDec={onDec}
                   onWish={onWish} wished={!!wishlist[p.id]} />
               ))}
@@ -375,7 +389,7 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
             </div>
             <div className="product-row deals">
               {bonsPlans.map((p) => (
-                <ProductCard key={p.id} p={p} qty={cart[p.id] || 0}
+                <ProductCard key={p.id} p={p} qty={getQty(p.wcId)}
                   onAdd={onAdd} onInc={onInc} onDec={onDec}
                   onWish={onWish} wished={!!wishlist[p.id]} />
               ))}

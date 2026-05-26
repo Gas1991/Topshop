@@ -4,9 +4,11 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { WCProduct, WCCategory } from '@/lib/woocommerce';
 import { getProductImage, getDiscount, getBrand } from '@/lib/woocommerce';
+import { useCart } from '@/lib/cart';
 
 /* ── Product Card ──────────────────────────────────────────────── */
 function ProductCard({ p }: { p: WCProduct }) {
+  const { addItem } = useCart();
   const [wished, setWished] = useState(false);
   const [added, setAdded] = useState(false);
   const img = getProductImage(p);
@@ -18,6 +20,7 @@ function ProductCard({ p }: { p: WCProduct }) {
 
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault();
+    addItem({ id: Number(p.id), slug: p.slug, name: p.name, price, img });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   }
@@ -314,7 +317,7 @@ export default function ShopClient({ products, categories, title, total }: ShopC
         .sc-card { display: block; background: #fff; border: 1px solid #ececec; border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; transition: box-shadow .15s, transform .15s; }
         .sc-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.1); transform: translateY(-2px); }
         .sc-card-img { position: relative; aspect-ratio: 1; background: #F8F9FA; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .sc-card-img img { width: 100%; height: 100%; object-fit: contain; padding: 12px; transition: transform .2s; }
+        .sc-card-img img { width: 100%; height: 100%; object-fit: contain; padding: 12px; transition: transform .2s; mix-blend-mode: multiply; }
         .sc-card:hover .sc-card-img img { transform: scale(1.04); }
         .sc-no-img { font-size: 48px; }
         .sc-badge { position: absolute; top: 8px; left: 8px; background: #E2231A; color: #fff; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; z-index: 1; }

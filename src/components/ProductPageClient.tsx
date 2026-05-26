@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import type { WCProduct } from '@/lib/woocommerce';
 import { getProductImage } from '@/lib/woocommerce';
+import { useCart } from '@/lib/cart';
 
 function Stars({ value }: { value: number }) {
   const full = Math.floor(value);
@@ -15,6 +16,7 @@ function Stars({ value }: { value: number }) {
 }
 
 export default function ProductPageClient({ product }: { product: WCProduct }) {
+  const { addItem } = useCart();
   const [qty, setQty] = useState(1);
   const [delivery, setDelivery] = useState<'standard' | 'express'>('express');
   const [wished, setWished] = useState(false);
@@ -34,6 +36,13 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
   const brand = product.tags?.find(t => t.name.length < 20)?.name || '';
 
   function handleAdd() {
+    addItem({
+      id: Number(product.id),
+      slug: product.slug,
+      name: product.name,
+      price,
+      img: displayImg,
+    });
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   }
@@ -59,7 +68,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
         /* Gallery */
         .pp-gallery { display: flex; flex-direction: column; gap: 12px; }
         .pp-main-img { position: relative; aspect-ratio: 1; background: #F8F9FA; border-radius: 14px; overflow: hidden; cursor: zoom-in; display: flex; align-items: center; justify-content: center; }
-        .pp-main-img img { width: 100%; height: 100%; object-fit: contain; padding: 20px; transition: transform .3s; }
+        .pp-main-img img { width: 100%; height: 100%; object-fit: contain; padding: 20px; transition: transform .3s; mix-blend-mode: multiply; }
         .pp-main-img:hover img { transform: scale(1.05); }
         .pp-disc-badge { position: absolute; top: 14px; left: 14px; background: #E2231A; color: #fff; font-weight: 800; font-size: 12px; padding: 5px 10px; border-radius: 6px; z-index: 2; }
         .pp-wish-btn { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; background: #fff; border: 1px solid #ececec; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: all .15s; box-shadow: 0 2px 6px rgba(0,0,0,.08); z-index: 2; }
@@ -68,7 +77,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
         .pp-thumbs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
         .pp-thumbs::-webkit-scrollbar { display: none; }
         .pp-thumb { flex: 0 0 auto; width: 60px; height: 60px; background: #F8F9FA; border: 2px solid transparent; border-radius: 10px; padding: 6px; cursor: pointer; transition: border-color .12s; }
-        .pp-thumb img { width: 100%; height: 100%; object-fit: contain; }
+        .pp-thumb img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
         .pp-thumb.active { border-color: #FFB800; }
         .pp-thumb:hover { border-color: #ddd; }
 
@@ -313,7 +322,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
               <button className={`pp-btn pp-btn-primary${added ? ' added' : ''}`} onClick={handleAdd}>
                 {added ? '✓ Ajouté au panier !' : '🛒 Ajouter au panier'}
               </button>
-              <a href={`/produit/${product.slug}`} target="_blank" rel="noopener noreferrer" className="pp-btn pp-btn-secondary">
+              <a href="/checkout" className="pp-btn pp-btn-secondary" onClick={() => addItem({ id: Number(product.id), slug: product.slug, name: product.name, price, img: displayImg })}>
                 ⚡ Acheter maintenant
               </a>
               <button className={`pp-btn pp-btn-tertiary${wished ? ' on' : ''}`} onClick={() => setWished(!wished)}>
@@ -408,11 +417,10 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
           {added ? '✓ Ajouté !' : '🛒 Ajouter au panier'}
         </button>
         <a
-          href={`/produit/${product.slug}`}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/checkout"
           className="pp-btn pp-btn-secondary"
           style={{ flex: 1 }}
+          onClick={() => addItem({ id: Number(product.id), slug: product.slug, name: product.name, price, img: displayImg })}
         >
           Acheter
         </a>

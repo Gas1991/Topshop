@@ -2,13 +2,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { I } from './icons';
+import { useCart } from '@/lib/cart';
 
 interface HeaderProps {
-  cartCount?: number;
   categories?: { name: string; slug: string }[];
 }
 
-export default function Header({ cartCount = 0, categories = [] }: HeaderProps) {
+export default function Header({ categories = [] }: HeaderProps) {
+  const { count: cartCount } = useCart();
   const [query, setQuery] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {

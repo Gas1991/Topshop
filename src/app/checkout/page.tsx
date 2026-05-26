@@ -1,5 +1,7 @@
 'use client';
 import { useState } from 'react';
+import { useCart } from '@/lib/cart';
+import Link from 'next/link';
 
 /* ── Types ──────────────────────────────────────────────────────── */
 type Step = 1 | 2 | 3 | 4;
@@ -17,13 +19,8 @@ const GOVERNORATES: Record<string, string[]> = {
   'Gabes':     ['Gabes', 'El Hamma', 'Mareth'],
 };
 
-const CART_ITEMS = [
-  { name: 'Friteuse à Air BLACK+DECKER BL4000 4.2L', qty: 1, price: 89.900, img: 'https://placehold.co/60x60/F8F9FA/555?text=BD' },
-  { name: 'Cafetière Nescafé Dolce Gusto Mini Me', qty: 1, price: 89.900, img: 'https://placehold.co/60x60/F8F9FA/555?text=NG' },
-  { name: 'Blender Philips HR2041 450W', qty: 1, price: 49.900, img: 'https://placehold.co/60x60/F8F9FA/555?text=PH' },
-];
-
 export default function CheckoutPage() {
+  const { items: cartItems, count: cartCount, total: cartSubtotal, clearCart } = useCart();
   const [step, setStep] = useState<Step>(2);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -50,7 +47,7 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const deliveryPrice = delivery === 'express' ? 12.000 : 7.000;
-  const subtotal = CART_ITEMS.reduce((s, i) => s + i.price * i.qty, 0);
+  const subtotal = cartSubtotal;
   const discount = promoApplied ? subtotal * 0.1 : 0;
   const total = subtotal + deliveryPrice - discount;
 
@@ -86,8 +83,22 @@ export default function CheckoutPage() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      clearCart();
       setStep(4);
     }, 1800);
+  }
+
+  if (cartCount === 0 && step !== 4) {
+    return (
+      <main style={{ maxWidth: 520, margin: '80px auto', padding: '0 16px', textAlign: 'center' }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>🛒</div>
+        <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 12 }}>Votre panier est vide</h1>
+        <p style={{ color: '#888', marginBottom: 28 }}>Ajoutez des produits avant de passer commande.</p>
+        <Link href="/shop" style={{ background: '#FFB800', color: '#111', fontWeight: 700, padding: '13px 28px', borderRadius: 10, textDecoration: 'none', fontSize: 15 }}>
+          Voir les produits
+        </Link>
+      </main>
+    );
   }
 
   if (step === 4) {
@@ -122,16 +133,21 @@ export default function CheckoutPage() {
 
   const orderSummary = (
     <div className="ck-summary">
-      <div className="ck-summary-title">Votre commande ({CART_ITEMS.length} articles)</div>
+      <div className="ck-summary-title">Votre commande ({cartCount} article{cartCount > 1 ? 's' : ''})</div>
       <div className="ck-items">
-        {CART_ITEMS.map((item, i) => (
-          <div key={i} className="ck-item">
-            <img src={item.img} alt={item.name} className="ck-item-img" />
+        {cartItems.map((item) => (
+          <div key={item.id} className="ck-item">
+            <img
+              src={item.img || 'https://placehold.co/56x56/F8F9FA/555?text=P'}
+              alt={item.name}
+              className="ck-item-img"
+              style={{ mixBlendMode: 'multiply' }}
+            />
             <div className="ck-item-info">
               <div className="ck-item-name">{item.name}</div>
               <div className="ck-item-qty">Qté : {item.qty}</div>
             </div>
-            <div className="ck-item-price">{item.price.toFixed(3)} TND</div>
+            <div className="ck-item-price">{(item.price * item.qty).toFixed(3)} TND</div>
           </div>
         ))}
       </div>
@@ -311,7 +327,7 @@ export default function CheckoutPage() {
 
         {/* Mobile summary toggle */}
         <div className="ck-mobile-summary" onClick={() => setSummaryOpen(!summaryOpen)}>
-          <span>Voir le récapitulatif ({CART_ITEMS.length} articles) {summaryOpen ? '▲' : '▼'}</span>
+          <span>Voir le récapitulatif ({cartCount} article{cartCount > 1 ? 's' : ''}) {summaryOpen ? '▲' : '▼'}</span>
           <span className="ck-mobile-summary-total">{total.toFixed(3)} TND</span>
         </div>
 
