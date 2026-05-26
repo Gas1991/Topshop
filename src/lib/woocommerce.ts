@@ -83,8 +83,8 @@ export const api = {
     onSale: (limit = 8) =>
       wcFetch<WCProduct[]>('products', { on_sale: 1, orderby: 'date', order: 'desc', per_page: limit, status: 'publish' }),
 
-    byCategory: (categoryId: number, limit = 12) =>
-      wcFetch<WCProduct[]>('products', { category: categoryId, per_page: limit, status: 'publish' }),
+    byCategory: (categoryId: number, limit = 48) =>
+      wcFetch<WCProduct[]>('products', { category: categoryId, per_page: limit, status: 'publish', orderby: 'popularity', order: 'desc' }),
 
     search: (query: string, limit = 20) =>
       wcFetch<WCProduct[]>('products', { search: query, per_page: limit, status: 'publish' }),
@@ -98,7 +98,10 @@ export const api = {
   categories: {
     top: (limit = 10) =>
       wcFetch<WCCategory[]>('products/categories', {
-        hide_empty: 1, parent: 0, per_page: limit, orderby: 'count', order: 'desc',
+        hide_empty: 1, per_page: limit, orderby: 'count', order: 'desc',
       }),
+    bySlug: (slug: string) =>
+      wcFetch<WCCategory[]>('products/categories', { slug, per_page: 1 })
+        .then(cats => cats[0] ?? null),
   },
 };

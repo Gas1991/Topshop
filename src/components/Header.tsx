@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { I } from './icons';
 import { useCart } from '@/lib/cart';
+import { useAuth } from '@/lib/auth';
 
 interface HeaderProps {
   categories?: { name: string; slug: string }[];
@@ -10,6 +11,7 @@ interface HeaderProps {
 
 export default function Header({ categories = [] }: HeaderProps) {
   const { count: cartCount } = useCart();
+  const { user } = useAuth();
   const [query, setQuery] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
@@ -59,8 +61,8 @@ export default function Header({ categories = [] }: HeaderProps) {
             <Link className="h-btn" href="/account">
               <I.user s={20} />
               <div className="stack">
-                <span className="top">Bonjour</span>
-                <span className="bot">Mon compte</span>
+                <span className="top">{user ? `Bonjour, ${user.firstName}` : 'Bonjour'}</span>
+                <span className="bot">{user ? 'Mon espace' : 'Mon compte'}</span>
               </div>
             </Link>
             <Link className="h-btn cart-btn" href="/cart">

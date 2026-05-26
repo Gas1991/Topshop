@@ -276,28 +276,13 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
 
             {/* Delivery options */}
             <div className="pp-delivery-card">
-              <div
-                className={`pp-delivery-row${delivery === 'standard' ? ' active' : ''}`}
-                onClick={() => setDelivery('standard')}
-              >
+              <div className="pp-delivery-row active">
                 <div className="pp-dlv-ico">📦</div>
                 <div className="pp-dlv-label">
                   Livraison standard
-                  <small>3-5 jours ouvrés</small>
+                  <small>48–72h — Partout en Tunisie</small>
                 </div>
-                <div className="pp-dlv-price">7.000 TND</div>
-                <div className="pp-dlv-radio" />
-              </div>
-              <div
-                className={`pp-delivery-row express${delivery === 'express' ? ' active' : ''}`}
-                onClick={() => setDelivery('express')}
-              >
-                <div className="pp-dlv-ico exp">⚡</div>
-                <div className="pp-dlv-label">
-                  Livraison express
-                  <small>Demain avant 18h</small>
-                </div>
-                <div className="pp-dlv-price">12.000 TND</div>
+                <div className="pp-dlv-price">10.000 TND</div>
                 <div className="pp-dlv-radio" />
               </div>
             </div>

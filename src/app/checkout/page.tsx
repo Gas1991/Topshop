@@ -1,29 +1,23 @@
 'use client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useCart } from '@/lib/cart';
+import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
+import locationsRaw from '@/data/tunisia_locations.json';
 
-/* ── Types ──────────────────────────────────────────────────────── */
+type LocationEntry = { delegation: string; localite: string; cp: string };
+const LOCATIONS = locationsRaw as Record<string, LocationEntry[]>;
+const GOVERNORATS = Object.keys(LOCATIONS).sort();
+
 type Step = 1 | 2 | 3 | 4;
-type PayMethod = 'cod' | 'card' | 'virement';
-type Delivery = 'standard' | 'express';
-
-const GOVERNORATES: Record<string, string[]> = {
-  'Tunis':     ['Tunis', 'La Marsa', 'Le Bardo', 'El Menzah', 'Ariana'],
-  'Sfax':      ['Sfax Ville', 'Sakiet Ezzit', 'Thyna', 'Agareb'],
-  'Sousse':    ['Sousse Ville', 'Hammam Sousse', 'Kalaa Kebira', 'Msaken'],
-  'Monastir':  ['Monastir', 'Ksar Hellal', 'Moknine', 'Jemmal'],
-  'Bizerte':   ['Bizerte', 'Menzel Bourguiba', 'Mateur'],
-  'Nabeul':    ['Nabeul', 'Hammamet', 'Kélibia', 'Grombalia'],
-  'Kairouan':  ['Kairouan', 'Sbikha', 'Haffouz'],
-  'Gabes':     ['Gabes', 'El Hamma', 'Mareth'],
-};
 
 export default function CheckoutPage() {
   const { items: cartItems, count: cartCount, total: cartSubtotal, clearCart } = useCart();
+  const { saveOrder } = useAuth();
   const [step, setStep] = useState<Step>(2);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [orderId, setOrderId] = useState('');
 
   /* Form state */
   const [prenom, setPrenom] = useState('');
@@ -32,24 +26,56 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState('');
   const [governorat, setGovernorat] = useState('');
   const [delegation, setDelegation] = useState('');
-  const [adresse, setAdresse] = useState('');
+  const [localite, setLocalite] = useState('');
   const [codePostal, setCodePostal] = useState('');
+  const [rue, setRue] = useState('');
   const [note, setNote] = useState('');
-  const [delivery, setDelivery] = useState<Delivery>('express');
-  const [payMethod, setPayMethod] = useState<PayMethod>('cod');
   const [promo, setPromo] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoMsg, setPromoMsg] = useState('');
-  const [cardNum, setCardNum] = useState('');
-  const [cardExp, setCardExp] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [cardName, setCardName] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const deliveryPrice = delivery === 'express' ? 12.000 : 7.000;
+  const deliveryPrice = 10.000;
   const subtotal = cartSubtotal;
   const discount = promoApplied ? subtotal * 0.1 : 0;
   const total = subtotal + deliveryPrice - discount;
+
+  /* Derived location lists */
+  const delegations = useMemo(() => {
+    if (!governorat) return [];
+    const all = LOCATIONS[governorat] ?? [];
+    return [...new Set(all.map(e => e.delegation))].sort();
+  }, [governorat]);
+
+  const localities = useMemo(() => {
+    if (!governorat || !delegation) return [];
+    return (LOCATIONS[governorat] ?? [])
+      .filter(e => e.delegation === delegation)
+      .map(e => e.localite);
+  }, [governorat, delegation]);
+
+  function handleGovernoratChange(val: string) {
+    setGovernorat(val);
+    setDelegation('');
+    setLocalite('');
+    setCodePostal('');
+    setErrors(x => ({ ...x, governorat: '' }));
+  }
+
+  function handleDelegationChange(val: string) {
+    setDelegation(val);
+    setLocalite('');
+    setCodePostal('');
+    setErrors(x => ({ ...x, delegation: '' }));
+  }
+
+  function handleLocaliteChange(val: string) {
+    setLocalite(val);
+    const entry = (LOCATIONS[governorat] ?? []).find(
+      e => e.delegation === delegation && e.localite === val
+    );
+    setCodePostal(entry?.cp ?? '');
+  }
 
   function applyPromo() {
     if (promo.toUpperCase() === 'TOPRIX10') {
@@ -68,12 +94,7 @@ export default function CheckoutPage() {
     if (!tel.trim()) e.tel = 'Requis';
     if (!governorat) e.governorat = 'Requis';
     if (!delegation) e.delegation = 'Requis';
-    if (!adresse.trim()) e.adresse = 'Requis';
-    if (payMethod === 'card') {
-      if (!cardNum.trim()) e.cardNum = 'Requis';
-      if (!cardExp.trim()) e.cardExp = 'Requis';
-      if (!cardCvv.trim()) e.cardCvv = 'Requis';
-    }
+    if (!rue.trim()) e.rue = 'Requis';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -82,6 +103,25 @@ export default function CheckoutPage() {
     if (!validate()) return;
     setLoading(true);
     setTimeout(() => {
+      const orderId = `TP-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 89999)}`;
+      saveOrder({
+        id: orderId,
+        date: new Date().toISOString(),
+        status: 'en_attente',
+        items: cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, img: i.img })),
+        subtotal,
+        delivery: deliveryPrice,
+        discount,
+        total,
+        prenom,
+        nom,
+        tel,
+        governorat,
+        delegation,
+        localite,
+        rue,
+      });
+      setOrderId(orderId);
       setLoading(false);
       clearCart();
       setStep(4);
@@ -119,13 +159,16 @@ export default function CheckoutPage() {
           <div className="ck-s-title">Commande confirmée ! 🎉</div>
           <div className="ck-s-ref">
             Numéro de commande :<br />
-            <strong>#TP-2026-45821</strong>
+            <strong>#{orderId}</strong>
           </div>
           <div className="ck-s-info">
             Vous recevrez un SMS de confirmation au <strong>+216 {tel || 'XX XXX XXX'}</strong>.<br />
             Notre équipe vous contactera dans les <strong>24h</strong> pour confirmer la livraison.
           </div>
-          <a href="/shop" className="ck-s-btn">Continuer mes achats →</a>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a href="/account" className="ck-s-btn">Suivre ma commande →</a>
+            <a href="/shop" style={{ display: 'inline-block', background: '#F8F9FA', color: '#111', fontWeight: 800, padding: '14px 28px', borderRadius: 10, textDecoration: 'none', fontSize: 15 }}>Continuer mes achats</a>
+          </div>
         </div>
       </>
     );
@@ -211,10 +254,10 @@ export default function CheckoutPage() {
         .ck-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
         .ck-field:last-child { margin-bottom: 0; }
         .ck-label { font-size: 12px; font-weight: 700; color: #555; }
-        .ck-input { border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; transition: border-color .12s; background: #fff; }
+        .ck-input { border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; transition: border-color .12s; background: #fff; width: 100%; }
         .ck-input:focus { border-color: #FFB800; }
         .ck-input.err { border-color: #dc2626; background: #fff5f5; }
-        .ck-input select { appearance: none; }
+        .ck-input:read-only { background: #F8F9FA; color: #666; cursor: default; }
         .ck-err-msg { font-size: 11px; color: #dc2626; font-weight: 600; }
         .ck-tel-wrap { display: flex; }
         .ck-tel-prefix { border: 1px solid #ddd; border-right: 0; border-radius: 8px 0 0 8px; padding: 10px 12px; font-size: 14px; background: #F8F9FA; color: #555; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
@@ -225,26 +268,21 @@ export default function CheckoutPage() {
         .ck-select { border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; background: #fff; width: 100%; cursor: pointer; appearance: auto; }
         .ck-select:focus { border-color: #FFB800; }
         .ck-select.err { border-color: #dc2626; }
+        .ck-select:disabled { background: #F8F9FA; color: #aaa; cursor: not-allowed; }
 
-        /* Delivery / Payment cards */
-        .ck-radio-card { border: 2px solid #ececec; border-radius: 12px; padding: 14px; cursor: pointer; transition: all .12s; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; margin-bottom: 10px; }
-        .ck-radio-card:last-child { margin-bottom: 0; }
-        .ck-radio-card.active { border-color: #FFB800; background: #FFFCEF; }
-        .ck-radio-card:hover:not(.active) { border-color: #ddd; background: #fafafa; }
-        .ck-radio-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #ccc; position: relative; flex-shrink: 0; }
-        .ck-radio-card.active .ck-radio-dot { border-color: #FFB800; }
-        .ck-radio-card.active .ck-radio-dot::after { content: ""; position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; background: #FFB800; border-radius: 50%; transform: translate(-50%,-50%); }
+        /* COD static card */
+        .ck-cod-card { border: 2px solid #FFB800; border-radius: 12px; padding: 16px; background: #FFFCEF; display: flex; align-items: center; gap: 14px; }
+        .ck-cod-icon { width: 44px; height: 44px; border-radius: 10px; background: #FFB800; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .ck-cod-label { font-size: 15px; font-weight: 800; color: #111; }
+        .ck-cod-sub { font-size: 12px; color: #666; margin-top: 3px; }
+        .ck-cod-badge { margin-left: auto; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; background: #dcfce7; color: #16a34a; white-space: nowrap; }
+
+        /* Delivery static card */
+        .ck-delivery-card { border: 2px solid #FFB800; border-radius: 12px; padding: 14px; background: #FFFCEF; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
         .ck-radio-icon { width: 38px; height: 38px; border-radius: 8px; background: #F8F9FA; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-        .ck-radio-icon.exp { background: #FFB800; }
         .ck-radio-label { font-size: 14px; font-weight: 700; color: #111; }
         .ck-radio-sub { font-size: 12px; color: #888; margin-top: 2px; }
         .ck-radio-price { font-size: 14px; font-weight: 800; color: #111; white-space: nowrap; }
-        .ck-radio-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 100px; white-space: nowrap; }
-        .ck-radio-badge.green { background: #dcfce7; color: #16a34a; }
-
-        /* Card form */
-        .ck-card-form { background: #F8F9FA; border-radius: 10px; padding: 16px; margin-top: 12px; }
-        .ck-card-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         /* Promo */
         .ck-promo { display: flex; gap: 10px; margin-top: 16px; }
@@ -282,7 +320,7 @@ export default function CheckoutPage() {
         .ck-badge-item { font-size: 11px; color: #888; font-weight: 600; text-align: center; }
 
         /* Mobile summary toggle */
-        .ck-mobile-summary { display: none; background: #FFFCEF; border-bottom: 1px solid #FFE08A; padding: 12px 16px; cursor: pointer; font-size: 14px; font-weight: 700; color: #111; display: none; align-items: center; justify-content: space-between; margin-bottom: 16px; border-radius: 12px; }
+        .ck-mobile-summary { display: none; background: #FFFCEF; border-bottom: 1px solid #FFE08A; padding: 12px 16px; cursor: pointer; font-size: 14px; font-weight: 700; color: #111; align-items: center; justify-content: space-between; margin-bottom: 16px; border-radius: 12px; }
         .ck-mobile-summary-total { color: #FFB800; }
 
         /* Mobile fixed CTA */
@@ -297,7 +335,6 @@ export default function CheckoutPage() {
         @media (max-width: 640px) {
           .ck-wrap { padding: 0 12px 80px; }
           .ck-row2 { grid-template-columns: 1fr; }
-          .ck-card-row2 { grid-template-columns: 1fr; }
           .ck-mobile-summary { display: flex; }
           .ck-mobile-cta { display: block; position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 14px; background: #fff; border-top: 1px solid #ececec; box-shadow: 0 -4px 12px rgba(0,0,0,.08); z-index: 50; }
           .ck-cta { display: none; }
@@ -347,7 +384,7 @@ export default function CheckoutPage() {
                     className={`ck-input${errors.prenom ? ' err' : ''}`}
                     placeholder="Ex: Ahmed"
                     value={prenom}
-                    onChange={e => { setPrenom(e.target.value); setErrors(x => ({...x, prenom: ''})); }}
+                    onChange={e => { setPrenom(e.target.value); setErrors(x => ({ ...x, prenom: '' })); }}
                   />
                   {errors.prenom && <span className="ck-err-msg">{errors.prenom}</span>}
                 </div>
@@ -357,7 +394,7 @@ export default function CheckoutPage() {
                     className={`ck-input${errors.nom ? ' err' : ''}`}
                     placeholder="Ex: Ben Ali"
                     value={nom}
-                    onChange={e => { setNom(e.target.value); setErrors(x => ({...x, nom: ''})); }}
+                    onChange={e => { setNom(e.target.value); setErrors(x => ({ ...x, nom: '' })); }}
                   />
                   {errors.nom && <span className="ck-err-msg">{errors.nom}</span>}
                 </div>
@@ -370,7 +407,7 @@ export default function CheckoutPage() {
                     className={`ck-tel-input${errors.tel ? ' err' : ''}`}
                     placeholder="XX XXX XXX"
                     value={tel}
-                    onChange={e => { setTel(e.target.value); setErrors(x => ({...x, tel: ''})); }}
+                    onChange={e => { setTel(e.target.value); setErrors(x => ({ ...x, tel: '' })); }}
                     maxLength={9}
                   />
                 </div>
@@ -388,22 +425,24 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Adresse */}
+            {/* Adresse de livraison */}
             <div className="ck-card">
               <div className="ck-section-title">
                 <span className="ck-section-num">2</span>
                 Adresse de livraison
               </div>
+
+              {/* Gouvernorat + Délégation */}
               <div className="ck-row2">
                 <div className="ck-field">
                   <label className="ck-label">Gouvernorat *</label>
                   <select
                     className={`ck-select${errors.governorat ? ' err' : ''}`}
                     value={governorat}
-                    onChange={e => { setGovernorat(e.target.value); setDelegation(''); setErrors(x => ({...x, governorat: ''})); }}
+                    onChange={e => handleGovernoratChange(e.target.value)}
                   >
                     <option value="">Sélectionner...</option>
-                    {Object.keys(GOVERNORATES).map(g => (
+                    {GOVERNORATS.map(g => (
                       <option key={g} value={g}>{g}</option>
                     ))}
                   </select>
@@ -414,40 +453,58 @@ export default function CheckoutPage() {
                   <select
                     className={`ck-select${errors.delegation ? ' err' : ''}`}
                     value={delegation}
-                    onChange={e => { setDelegation(e.target.value); setErrors(x => ({...x, delegation: ''})); }}
+                    onChange={e => handleDelegationChange(e.target.value)}
                     disabled={!governorat}
                   >
                     <option value="">Sélectionner...</option>
-                    {(GOVERNORATES[governorat] || []).map(d => (
+                    {delegations.map(d => (
                       <option key={d} value={d}>{d}</option>
                     ))}
                   </select>
                   {errors.delegation && <span className="ck-err-msg">{errors.delegation}</span>}
                 </div>
               </div>
-              <div className="ck-field">
-                <label className="ck-label">Adresse *</label>
-                <input
-                  className={`ck-input${errors.adresse ? ' err' : ''}`}
-                  placeholder="Ex: 12 Rue de la République, App. 3"
-                  value={adresse}
-                  onChange={e => { setAdresse(e.target.value); setErrors(x => ({...x, adresse: ''})); }}
-                />
-                {errors.adresse && <span className="ck-err-msg">{errors.adresse}</span>}
-              </div>
+
+              {/* Localité + Code postal */}
               <div className="ck-row2">
+                <div className="ck-field">
+                  <label className="ck-label">Localité</label>
+                  <select
+                    className="ck-select"
+                    value={localite}
+                    onChange={e => handleLocaliteChange(e.target.value)}
+                    disabled={!delegation}
+                  >
+                    <option value="">Sélectionner...</option>
+                    {localities.map(l => (
+                      <option key={l} value={l}>{l}</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="ck-field">
                   <label className="ck-label">Code postal</label>
                   <input
                     className="ck-input"
-                    placeholder="Ex: 1002"
                     value={codePostal}
-                    onChange={e => setCodePostal(e.target.value)}
-                    maxLength={4}
+                    readOnly
+                    placeholder="—"
                   />
                 </div>
-                <div />
               </div>
+
+              {/* Rue — saisie manuelle */}
+              <div className="ck-field">
+                <label className="ck-label">Rue / Adresse *</label>
+                <input
+                  className={`ck-input${errors.rue ? ' err' : ''}`}
+                  placeholder="Ex: 12 Rue de la République, Appt 3"
+                  value={rue}
+                  onChange={e => { setRue(e.target.value); setErrors(x => ({ ...x, rue: '' })); }}
+                />
+                {errors.rue && <span className="ck-err-msg">{errors.rue}</span>}
+              </div>
+
+              {/* Note livreur */}
               <div className="ck-field" style={{ marginBottom: 0 }}>
                 <label className="ck-label">Note pour le livreur</label>
                 <textarea
@@ -459,131 +516,38 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Delivery */}
+            {/* Livraison */}
             <div className="ck-card">
               <div className="ck-section-title">
                 <span className="ck-section-num">3</span>
                 Mode de livraison
               </div>
-              <div
-                className={`ck-radio-card${delivery === 'standard' ? ' active' : ''}`}
-                onClick={() => setDelivery('standard')}
-              >
-                <div className="ck-radio-dot" />
+              <div className="ck-delivery-card">
                 <div className="ck-radio-icon">📦</div>
-                <div style={{ flex: 1 }}>
+                <div>
                   <div className="ck-radio-label">Livraison standard</div>
-                  <div className="ck-radio-sub">3-5 jours ouvrés — Tout le pays</div>
+                  <div className="ck-radio-sub">48–72h — Partout en Tunisie</div>
                 </div>
-                <div className="ck-radio-price">7.000 TND</div>
-              </div>
-              <div
-                className={`ck-radio-card${delivery === 'express' ? ' active' : ''}`}
-                onClick={() => setDelivery('express')}
-              >
-                <div className="ck-radio-dot" />
-                <div className="ck-radio-icon exp">⚡</div>
-                <div style={{ flex: 1 }}>
-                  <div className="ck-radio-label">Livraison express</div>
-                  <div className="ck-radio-sub">Demain avant 18h — Grand Tunis</div>
-                </div>
-                <div className="ck-radio-price">12.000 TND</div>
+                <div className="ck-radio-price">10.000 TND</div>
               </div>
             </div>
 
-            {/* Payment */}
+            {/* Paiement */}
             <div className="ck-card">
               <div className="ck-section-title">
                 <span className="ck-section-num">4</span>
                 Mode de paiement
               </div>
-              <div
-                className={`ck-radio-card${payMethod === 'cod' ? ' active' : ''}`}
-                onClick={() => setPayMethod('cod')}
-              >
-                <div className="ck-radio-dot" />
-                <div className="ck-radio-icon">💵</div>
-                <div style={{ flex: 1 }}>
-                  <div className="ck-radio-label">Paiement à la livraison</div>
-                  <div className="ck-radio-sub">Payez en cash à la réception</div>
+              <div className="ck-cod-card">
+                <div className="ck-cod-icon">💵</div>
+                <div>
+                  <div className="ck-cod-label">Paiement à la livraison</div>
+                  <div className="ck-cod-sub">Payez en cash à la réception de votre commande</div>
                 </div>
-                <span className="ck-radio-badge green">Recommandé</span>
-              </div>
-              <div
-                className={`ck-radio-card${payMethod === 'card' ? ' active' : ''}`}
-                onClick={() => setPayMethod('card')}
-              >
-                <div className="ck-radio-dot" />
-                <div className="ck-radio-icon">💳</div>
-                <div style={{ flex: 1 }}>
-                  <div className="ck-radio-label">Carte bancaire</div>
-                  <div className="ck-radio-sub">Visa, Mastercard</div>
-                </div>
-                <div style={{ fontSize: 20, display: 'flex', gap: 6 }}>💳</div>
-              </div>
-              <div
-                className={`ck-radio-card${payMethod === 'virement' ? ' active' : ''}`}
-                onClick={() => setPayMethod('virement')}
-              >
-                <div className="ck-radio-dot" />
-                <div className="ck-radio-icon">🏦</div>
-                <div style={{ flex: 1 }}>
-                  <div className="ck-radio-label">Virement bancaire</div>
-                  <div className="ck-radio-sub">Délai : 1-2 jours ouvrés</div>
-                </div>
+                <span className="ck-cod-badge">Recommandé</span>
               </div>
 
-              {payMethod === 'card' && (
-                <div className="ck-card-form">
-                  <div className="ck-field">
-                    <label className="ck-label">Numéro de carte *</label>
-                    <input
-                      className={`ck-input${errors.cardNum ? ' err' : ''}`}
-                      placeholder="____ ____ ____ ____"
-                      value={cardNum}
-                      onChange={e => { setCardNum(e.target.value); setErrors(x => ({...x, cardNum: ''})); }}
-                      maxLength={19}
-                    />
-                    {errors.cardNum && <span className="ck-err-msg">{errors.cardNum}</span>}
-                  </div>
-                  <div className="ck-card-row2">
-                    <div className="ck-field" style={{ marginBottom: 0 }}>
-                      <label className="ck-label">Expiration *</label>
-                      <input
-                        className={`ck-input${errors.cardExp ? ' err' : ''}`}
-                        placeholder="MM/AA"
-                        value={cardExp}
-                        onChange={e => { setCardExp(e.target.value); setErrors(x => ({...x, cardExp: ''})); }}
-                        maxLength={5}
-                      />
-                      {errors.cardExp && <span className="ck-err-msg">{errors.cardExp}</span>}
-                    </div>
-                    <div className="ck-field" style={{ marginBottom: 0 }}>
-                      <label className="ck-label">CVV *</label>
-                      <input
-                        className={`ck-input${errors.cardCvv ? ' err' : ''}`}
-                        placeholder="•••"
-                        value={cardCvv}
-                        onChange={e => { setCardCvv(e.target.value); setErrors(x => ({...x, cardCvv: ''})); }}
-                        maxLength={4}
-                        type="password"
-                      />
-                      {errors.cardCvv && <span className="ck-err-msg">{errors.cardCvv}</span>}
-                    </div>
-                  </div>
-                  <div className="ck-field" style={{ marginBottom: 0, marginTop: 12 }}>
-                    <label className="ck-label">Nom sur la carte</label>
-                    <input
-                      className="ck-input"
-                      placeholder="Nom complet"
-                      value={cardName}
-                      onChange={e => setCardName(e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Promo */}
+              {/* Code promo */}
               <div className="ck-promo">
                 <input
                   className="ck-promo-input"

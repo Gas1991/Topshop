@@ -11,7 +11,7 @@ export default async function Page() {
     api.categories.top(20).catch(() => []),
   ]);
 
-  const BAD = ['non-classe', 'other-categories', 'uncategorized'];
+  const BAD = ['non-classe', 'other-categories', 'uncategorized', 'autre'];
   const cleanCategories = categories.filter(c =>
     !BAD.some(b => c.slug.startsWith(b)) && !c.name.includes('|') && c.count > 0
   );

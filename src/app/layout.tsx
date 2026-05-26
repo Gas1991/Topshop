@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { api } from '@/lib/woocommerce';
 import { CartProvider } from '@/lib/cart';
+import { AuthProvider } from '@/lib/auth';
 
 export const metadata: Metadata = {
   title: 'Toprix — Meilleurs prix électroménager en Tunisie',
@@ -17,11 +18,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="fr">
       <body style={{ margin: 0, padding: 0, minHeight: '100vh' }}>
-        <CartProvider>
-          <Header categories={categories} />
-          {children}
-          <Footer />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Header categories={categories} />
+            {children}
+            <Footer />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -103,11 +103,11 @@ export default function CartPage() {
             </div>
             <div className="cart-summary-row">
               <span>Livraison</span>
-              <span style={{ color: '#16a34a', fontWeight: 700 }}>À calculer</span>
+              <span>10.000 TND</span>
             </div>
             <div className="cart-summary-total">
               <span>Total</span>
-              <span>{total.toFixed(3)} TND</span>
+              <span>{(total + 10).toFixed(3)} TND</span>
             </div>
             <Link href="/checkout" className="cart-checkout-btn">
               Passer la commande →
