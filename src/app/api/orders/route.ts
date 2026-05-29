@@ -13,6 +13,10 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    // WooCommerce rejects empty string email — remove it if not provided
+    if (body.billing?.email === '') delete body.billing.email;
+    if (body.shipping?.email === '') delete body.shipping.email;
+
     const url = `${WC_URL}/wp-json/wc/v3/orders`;
     const auth = Buffer.from(`${WC_KEY}:${WC_SECRET}`).toString('base64');
 

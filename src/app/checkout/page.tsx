@@ -34,14 +34,15 @@ export default function CheckoutPage() {
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoMsg, setPromoMsg] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [editingAddress, setEditingAddress] = useState(false);
 
   // Pré-remplir depuis le profil utilisateur connecté
   useEffect(() => {
     if (!user) return;
-    if (!prenom && user.firstName) setPrenom(user.firstName);
-    if (!nom    && user.lastName)  setNom(user.lastName);
-    if (!tel    && user.phone)     setTel(user.phone);
-    if (!governorat && user.governorat) {
+    if (user.firstName) setPrenom(user.firstName);
+    if (user.lastName)  setNom(user.lastName);
+    if (user.phone)     setTel(user.phone);
+    if (user.governorat) {
       setGovernorat(user.governorat);
       if (user.delegation) {
         setDelegation(user.delegation);
@@ -49,9 +50,12 @@ export default function CheckoutPage() {
         if (user.codePostal) setCodePostal(user.codePostal);
       }
     }
-    if (!rue && user.rue) setRue(user.rue);
+    if (user.rue) setRue(user.rue);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Profil complet = toutes les infos nécessaires sont disponibles
+  const profileComplete = !!(user?.firstName && user?.lastName && user?.phone && user?.governorat && user?.delegation && user?.rue);
 
   const deliveryPrice = 10.000;
   const subtotal = cartSubtotal;
@@ -459,155 +463,194 @@ export default function CheckoutPage() {
         <div className="ck-layout">
           {/* Left column — form */}
           <div>
-            {/* Coordonnées */}
-            <div className="ck-card">
-              <div className="ck-section-title">
-                <span className="ck-section-num">1</span>
-                Coordonnées
-              </div>
-              <div className="ck-row2">
-                <div className="ck-field">
-                  <label className="ck-label">Prénom *</label>
-                  <input
-                    className={`ck-input${errors.prenom ? ' err' : ''}`}
-                    placeholder="Ex: Ahmed"
-                    value={prenom}
-                    onChange={e => { setPrenom(e.target.value); setErrors(x => ({ ...x, prenom: '' })); }}
-                  />
-                  {errors.prenom && <span className="ck-err-msg">{errors.prenom}</span>}
-                </div>
-                <div className="ck-field">
-                  <label className="ck-label">Nom *</label>
-                  <input
-                    className={`ck-input${errors.nom ? ' err' : ''}`}
-                    placeholder="Ex: Ben Ali"
-                    value={nom}
-                    onChange={e => { setNom(e.target.value); setErrors(x => ({ ...x, nom: '' })); }}
-                  />
-                  {errors.nom && <span className="ck-err-msg">{errors.nom}</span>}
-                </div>
-              </div>
-              <div className="ck-field">
-                <label className="ck-label">Téléphone *</label>
-                <div className="ck-tel-wrap">
-                  <div className="ck-tel-prefix">🇹🇳 +216</div>
-                  <input
-                    className={`ck-tel-input${errors.tel ? ' err' : ''}`}
-                    placeholder="XX XXX XXX"
-                    value={tel}
-                    onChange={e => { setTel(e.target.value); setErrors(x => ({ ...x, tel: '' })); }}
-                    maxLength={9}
-                  />
-                </div>
-                {errors.tel && <span className="ck-err-msg">{errors.tel}</span>}
-              </div>
-              <div className="ck-field" style={{ marginBottom: 0 }}>
-                <label className="ck-label">Email</label>
-                <input
-                  className="ck-input"
-                  type="email"
-                  placeholder="votre@email.tn"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Adresse de livraison */}
-            <div className="ck-card">
-              <div className="ck-section-title">
-                <span className="ck-section-num">2</span>
-                Adresse de livraison
-              </div>
-
-              {/* Gouvernorat + Délégation */}
-              <div className="ck-row2">
-                <div className="ck-field">
-                  <label className="ck-label">Gouvernorat *</label>
-                  <select
-                    className={`ck-select${errors.governorat ? ' err' : ''}`}
-                    value={governorat}
-                    onChange={e => handleGovernoratChange(e.target.value)}
+            {/* Coordonnées + Adresse */}
+            {profileComplete && !editingAddress ? (
+              /* ── Résumé profil (utilisateur connecté avec adresse complète) ── */
+              <div className="ck-card">
+                <div className="ck-section-title">
+                  <span className="ck-section-num">1</span>
+                  Informations de livraison
+                  <button
+                    type="button"
+                    onClick={() => setEditingAddress(true)}
+                    style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: '#666', background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}
                   >
-                    <option value="">Sélectionner...</option>
-                    {GOVERNORATS.map(g => (
-                      <option key={g} value={g}>{g}</option>
-                    ))}
-                  </select>
-                  {errors.governorat && <span className="ck-err-msg">{errors.governorat}</span>}
+                    Modifier
+                  </button>
                 </div>
-                <div className="ck-field">
-                  <label className="ck-label">Délégation *</label>
-                  <select
-                    className={`ck-select${errors.delegation ? ' err' : ''}`}
-                    value={delegation}
-                    onChange={e => handleDelegationChange(e.target.value)}
-                    disabled={!governorat}
-                  >
-                    <option value="">Sélectionner...</option>
-                    {delegations.map(d => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                  {errors.delegation && <span className="ck-err-msg">{errors.delegation}</span>}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, color: '#333' }}>
+                  <div><strong>{prenom} {nom}</strong> &nbsp;·&nbsp; 🇹🇳 +216 {tel}</div>
+                  <div>{rue}</div>
+                  <div>{delegation}{localite ? `, ${localite}` : ''} — {governorat}{codePostal ? ` ${codePostal}` : ''}</div>
+                  {user?.email && <div style={{ color: '#888', fontSize: 13 }}>{user.email}</div>}
                 </div>
-              </div>
-
-              {/* Localité + Code postal */}
-              <div className="ck-row2">
-                <div className="ck-field">
-                  <label className="ck-label">Localité</label>
-                  <select
-                    className="ck-select"
-                    value={localite}
-                    onChange={e => handleLocaliteChange(e.target.value)}
-                    disabled={!delegation}
-                  >
-                    <option value="">Sélectionner...</option>
-                    {localities.map(l => (
-                      <option key={l} value={l}>{l}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="ck-field">
-                  <label className="ck-label">Code postal</label>
-                  <input
-                    className="ck-input"
-                    value={codePostal}
-                    readOnly
-                    placeholder="—"
+                <div className="ck-field" style={{ marginTop: 14, marginBottom: 0 }}>
+                  <label className="ck-label">Note pour le livreur</label>
+                  <textarea
+                    className="ck-textarea"
+                    placeholder="Ex: Sonner 2 fois, code porte 1234"
+                    value={note}
+                    onChange={e => setNote(e.target.value)}
                   />
                 </div>
               </div>
+            ) : (
+              /* ── Formulaire complet ── */
+              <>
+                <div className="ck-card">
+                  <div className="ck-section-title">
+                    <span className="ck-section-num">1</span>
+                    Coordonnées
+                    {profileComplete && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingAddress(false)}
+                        style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: '#666', background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}
+                      >
+                        ← Annuler
+                      </button>
+                    )}
+                  </div>
+                  <div className="ck-row2">
+                    <div className="ck-field">
+                      <label className="ck-label">Prénom *</label>
+                      <input
+                        className={`ck-input${errors.prenom ? ' err' : ''}`}
+                        placeholder="Ex: Ahmed"
+                        value={prenom}
+                        onChange={e => { setPrenom(e.target.value); setErrors(x => ({ ...x, prenom: '' })); }}
+                      />
+                      {errors.prenom && <span className="ck-err-msg">{errors.prenom}</span>}
+                    </div>
+                    <div className="ck-field">
+                      <label className="ck-label">Nom *</label>
+                      <input
+                        className={`ck-input${errors.nom ? ' err' : ''}`}
+                        placeholder="Ex: Ben Ali"
+                        value={nom}
+                        onChange={e => { setNom(e.target.value); setErrors(x => ({ ...x, nom: '' })); }}
+                      />
+                      {errors.nom && <span className="ck-err-msg">{errors.nom}</span>}
+                    </div>
+                  </div>
+                  <div className="ck-field">
+                    <label className="ck-label">Téléphone *</label>
+                    <div className="ck-tel-wrap">
+                      <div className="ck-tel-prefix">🇹🇳 +216</div>
+                      <input
+                        className={`ck-tel-input${errors.tel ? ' err' : ''}`}
+                        placeholder="XX XXX XXX"
+                        value={tel}
+                        onChange={e => { setTel(e.target.value); setErrors(x => ({ ...x, tel: '' })); }}
+                        maxLength={9}
+                      />
+                    </div>
+                    {errors.tel && <span className="ck-err-msg">{errors.tel}</span>}
+                  </div>
+                  <div className="ck-field" style={{ marginBottom: 0 }}>
+                    <label className="ck-label">Email</label>
+                    <input
+                      className="ck-input"
+                      type="email"
+                      placeholder="votre@email.tn"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-              {/* Rue — saisie manuelle */}
-              <div className="ck-field">
-                <label className="ck-label">Rue / Adresse *</label>
-                <input
-                  className={`ck-input${errors.rue ? ' err' : ''}`}
-                  placeholder="Ex: 12 Rue de la République, Appt 3"
-                  value={rue}
-                  onChange={e => { setRue(e.target.value); setErrors(x => ({ ...x, rue: '' })); }}
-                />
-                {errors.rue && <span className="ck-err-msg">{errors.rue}</span>}
-              </div>
+                <div className="ck-card">
+                  <div className="ck-section-title">
+                    <span className="ck-section-num">2</span>
+                    Adresse de livraison
+                  </div>
 
-              {/* Note livreur */}
-              <div className="ck-field" style={{ marginBottom: 0 }}>
-                <label className="ck-label">Note pour le livreur</label>
-                <textarea
-                  className="ck-textarea"
-                  placeholder="Ex: Sonner 2 fois, code porte 1234"
-                  value={note}
-                  onChange={e => setNote(e.target.value)}
-                />
-              </div>
-            </div>
+                  <div className="ck-row2">
+                    <div className="ck-field">
+                      <label className="ck-label">Gouvernorat *</label>
+                      <select
+                        className={`ck-select${errors.governorat ? ' err' : ''}`}
+                        value={governorat}
+                        onChange={e => handleGovernoratChange(e.target.value)}
+                      >
+                        <option value="">Sélectionner...</option>
+                        {GOVERNORATS.map(g => (
+                          <option key={g} value={g}>{g}</option>
+                        ))}
+                      </select>
+                      {errors.governorat && <span className="ck-err-msg">{errors.governorat}</span>}
+                    </div>
+                    <div className="ck-field">
+                      <label className="ck-label">Délégation *</label>
+                      <select
+                        className={`ck-select${errors.delegation ? ' err' : ''}`}
+                        value={delegation}
+                        onChange={e => handleDelegationChange(e.target.value)}
+                        disabled={!governorat}
+                      >
+                        <option value="">Sélectionner...</option>
+                        {delegations.map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                      {errors.delegation && <span className="ck-err-msg">{errors.delegation}</span>}
+                    </div>
+                  </div>
+
+                  <div className="ck-row2">
+                    <div className="ck-field">
+                      <label className="ck-label">Localité</label>
+                      <select
+                        className="ck-select"
+                        value={localite}
+                        onChange={e => handleLocaliteChange(e.target.value)}
+                        disabled={!delegation}
+                      >
+                        <option value="">Sélectionner...</option>
+                        {localities.map(l => (
+                          <option key={l} value={l}>{l}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="ck-field">
+                      <label className="ck-label">Code postal</label>
+                      <input
+                        className="ck-input"
+                        value={codePostal}
+                        readOnly
+                        placeholder="—"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="ck-field">
+                    <label className="ck-label">Rue / Adresse *</label>
+                    <input
+                      className={`ck-input${errors.rue ? ' err' : ''}`}
+                      placeholder="Ex: 12 Rue de la République, Appt 3"
+                      value={rue}
+                      onChange={e => { setRue(e.target.value); setErrors(x => ({ ...x, rue: '' })); }}
+                    />
+                    {errors.rue && <span className="ck-err-msg">{errors.rue}</span>}
+                  </div>
+
+                  <div className="ck-field" style={{ marginBottom: 0 }}>
+                    <label className="ck-label">Note pour le livreur</label>
+                    <textarea
+                      className="ck-textarea"
+                      placeholder="Ex: Sonner 2 fois, code porte 1234"
+                      value={note}
+                      onChange={e => setNote(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Livraison */}
             <div className="ck-card">
               <div className="ck-section-title">
-                <span className="ck-section-num">3</span>
+                <span className="ck-section-num">{profileComplete && !editingAddress ? 2 : 3}</span>
                 Mode de livraison
               </div>
               <div className="ck-delivery-card">
@@ -623,7 +666,7 @@ export default function CheckoutPage() {
             {/* Paiement */}
             <div className="ck-card">
               <div className="ck-section-title">
-                <span className="ck-section-num">4</span>
+                <span className="ck-section-num">{profileComplete && !editingAddress ? 3 : 4}</span>
                 Mode de paiement
               </div>
               <div className="ck-cod-card">

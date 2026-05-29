@@ -102,7 +102,7 @@ export default function Header({ categories = [] }: HeaderProps) {
           <span className="div" />
           <Link className="hot" href="/shop?on_sale=1">🔥 Offres flash</Link>
           {categories.slice(0, 7).map(c => (
-            <Link key={c.slug} href={`/shop?cat=${c.slug}`}>{c.name}</Link>
+            <Link key={c.slug} href={`/categorie/${c.slug}`}>{c.name}</Link>
           ))}
         </div>
       </nav>
