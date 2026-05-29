@@ -1,8 +1,13 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth, StoredOrder } from '@/lib/auth';
+import locationsRaw from '@/data/tunisia_locations.json';
+
+type LocationEntry = { delegation: string; localite: string; cp: string };
+const LOCATIONS = locationsRaw as Record<string, LocationEntry[]>;
+const GOVERNORATS = Object.keys(LOCATIONS).sort();
 
 type Tab = 'profile' | 'orders' | 'tracking';
 
@@ -30,7 +35,7 @@ const STATUS_BG: Record<StoredOrder['status'], string> = {
 const STEPS: StoredOrder['status'][] = ['en_attente', 'confirmee', 'en_preparation', 'en_livraison', 'livree'];
 
 export default function AccountPage() {
-  const { user, logout, getOrders } = useAuth();
+  const { user, logout, getOrders, updateProfile } = useAuth();
   const router = useRouter();
 
   const [tab, setTab] = useState<Tab>('profile');
@@ -39,12 +44,93 @@ export default function AccountPage() {
   const [trackInput, setTrackInput] = useState('');
   const [trackError, setTrackError] = useState('');
 
+  // Edit profile state
+  const [editMode, setEditMode]           = useState(false);
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName]   = useState('');
+  const [editPhone, setEditPhone]         = useState('');
+  const [editGoverorat, setEditGovernorat] = useState('');
+  const [editDelegation, setEditDelegation] = useState('');
+  const [editLocalite, setEditLocalite]   = useState('');
+  const [editCodePostal, setEditCodePostal] = useState('');
+  const [editRue, setEditRue]             = useState('');
+  const [editCurPw, setEditCurPw]         = useState('');
+  const [editNewPw, setEditNewPw]         = useState('');
+  const [editConfPw, setEditConfPw]       = useState('');
+  const [editLoading, setEditLoading]     = useState(false);
+  const [editError, setEditError]         = useState('');
+  const [editSuccess, setEditSuccess]     = useState(false);
+
+  const editDelegations = useMemo(() => {
+    if (!editGoverorat) return [];
+    const all = LOCATIONS[editGoverorat] ?? [];
+    return [...new Set(all.map(e => e.delegation))].sort();
+  }, [editGoverorat]);
+
+  const editLocalities = useMemo(() => {
+    if (!editGoverorat || !editDelegation) return [];
+    return (LOCATIONS[editGoverorat] ?? [])
+      .filter(e => e.delegation === editDelegation)
+      .map(e => e.localite);
+  }, [editGoverorat, editDelegation]);
+
   useEffect(() => {
     if (!user) { router.replace('/account/login'); return; }
     setOrders(getOrders());
   }, [user]);
 
   if (!user) return null;
+
+  function openEdit() {
+    setEditFirstName(user!.firstName);
+    setEditLastName(user!.lastName);
+    setEditPhone(user!.phone);
+    setEditGovernorat(user!.governorat || '');
+    setEditDelegation(user!.delegation || '');
+    setEditLocalite(user!.localite || '');
+    setEditCodePostal(user!.codePostal || '');
+    setEditRue(user!.rue || '');
+    setEditCurPw(''); setEditNewPw(''); setEditConfPw('');
+    setEditError(''); setEditSuccess(false);
+    setEditMode(true);
+  }
+
+  function handleEditGovernoratChange(val: string) {
+    setEditGovernorat(val); setEditDelegation(''); setEditLocalite(''); setEditCodePostal('');
+  }
+  function handleEditDelegationChange(val: string) {
+    setEditDelegation(val); setEditLocalite(''); setEditCodePostal('');
+  }
+  function handleEditLocaliteChange(val: string) {
+    setEditLocalite(val);
+    const entry = (LOCATIONS[editGoverorat] ?? []).find(e => e.delegation === editDelegation && e.localite === val);
+    setEditCodePostal(entry?.cp ?? '');
+  }
+
+  async function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    setEditError(''); setEditSuccess(false);
+    if (!editFirstName.trim() || !editLastName.trim()) { setEditError('Prénom et nom obligatoires'); return; }
+    if (editNewPw && editNewPw !== editConfPw) { setEditError('Les mots de passe ne correspondent pas'); return; }
+    if (editNewPw && editNewPw.length < 6) { setEditError('Le nouveau mot de passe doit contenir au moins 6 caractères'); return; }
+    setEditLoading(true);
+    const res = await updateProfile({
+      firstName:  editFirstName.trim(),
+      lastName:   editLastName.trim(),
+      phone:      editPhone.trim(),
+      governorat: editGoverorat || undefined,
+      delegation: editDelegation || undefined,
+      localite:   editLocalite || undefined,
+      codePostal: editCodePostal || undefined,
+      rue:        editRue.trim() || undefined,
+      currentPassword: editNewPw ? editCurPw : undefined,
+      newPassword:     editNewPw || undefined,
+    });
+    setEditLoading(false);
+    if (!res.ok) { setEditError(res.error || 'Erreur'); return; }
+    setEditSuccess(true);
+    setTimeout(() => { setEditMode(false); setEditSuccess(false); }, 1200);
+  }
 
   function handleLogout() {
     logout();
@@ -92,6 +178,29 @@ export default function AccountPage() {
         .ac-profile-field { background: #F8F9FA; border-radius: 10px; padding: 14px 16px; }
         .ac-profile-label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
         .ac-profile-value { font-size: 15px; font-weight: 700; color: #111; }
+
+        /* Edit form */
+        .ac-edit-form { display: flex; flex-direction: column; gap: 14px; }
+        .ac-edit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .ac-edit-group { display: flex; flex-direction: column; gap: 5px; }
+        .ac-edit-label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+        .ac-edit-input { border: 1.5px solid #e0e0e0; border-radius: 9px; padding: 10px 13px; font-size: 14px; font-family: inherit; outline: none; transition: border-color .12s; }
+        .ac-edit-input:focus { border-color: #FFB800; }
+        .ac-edit-divider { border: none; border-top: 1px solid #f0f0f0; margin: 4px 0; }
+        .ac-edit-section-title { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+        .ac-edit-actions { display: flex; gap: 10px; margin-top: 6px; }
+        .ac-edit-save { background: #FFB800; color: #111; border: 0; border-radius: 9px; padding: 11px 24px; font-size: 14px; font-weight: 800; cursor: pointer; transition: opacity .12s; }
+        .ac-edit-save:disabled { opacity: .5; cursor: not-allowed; }
+        .ac-edit-cancel { background: transparent; color: #555; border: 1.5px solid #e0e0e0; border-radius: 9px; padding: 11px 20px; font-size: 14px; font-weight: 700; cursor: pointer; }
+        .ac-edit-cancel:hover { border-color: #aaa; }
+        .ac-edit-error { font-size: 13px; color: #dc2626; font-weight: 600; }
+        .ac-edit-success { font-size: 13px; color: #16a34a; font-weight: 700; }
+        .ac-edit-select { border: 1.5px solid #e0e0e0; border-radius: 9px; padding: 10px 13px; font-size: 14px; font-family: inherit; outline: none; background: #fff; width: 100%; cursor: pointer; appearance: auto; transition: border-color .12s; }
+        .ac-edit-select:focus { border-color: #FFB800; }
+        .ac-edit-select:disabled { background: #F8F9FA; color: #aaa; cursor: not-allowed; }
+        .ac-address-block { background: #F8F9FA; border-radius: 10px; padding: 14px 16px; grid-column: 1 / -1; }
+        .ac-address-block .ac-profile-label { margin-bottom: 6px; }
+        .ac-address-value { font-size: 14px; font-weight: 600; color: #111; line-height: 1.6; }
 
         /* Orders list */
         .ac-orders-empty { text-align: center; padding: 48px 20px; color: #888; }
@@ -178,38 +287,162 @@ export default function AccountPage() {
         {/* ─── Mon profil ─── */}
         {tab === 'profile' && (
           <div className="ac-card">
-            <div className="ac-section-title">👤 Informations personnelles</div>
-            <div className="ac-profile-grid">
-              <div className="ac-profile-field">
-                <div className="ac-profile-label">Prénom</div>
-                <div className="ac-profile-value">{user.firstName}</div>
-              </div>
-              <div className="ac-profile-field">
-                <div className="ac-profile-label">Nom</div>
-                <div className="ac-profile-value">{user.lastName}</div>
-              </div>
-              <div className="ac-profile-field" style={{ gridColumn: '1 / -1' }}>
-                <div className="ac-profile-label">Adresse email</div>
-                <div className="ac-profile-value">{user.email}</div>
-              </div>
-              <div className="ac-profile-field">
-                <div className="ac-profile-label">Téléphone</div>
-                <div className="ac-profile-value">+216 {user.phone}</div>
-              </div>
-              <div className="ac-profile-field">
-                <div className="ac-profile-label">Membre depuis</div>
-                <div className="ac-profile-value">{new Date().toLocaleDateString('fr-TN', { month: 'long', year: 'numeric' })}</div>
-              </div>
+            <div className="ac-section-title" style={{ justifyContent: 'space-between' }}>
+              <span>👤 Informations personnelles</span>
+              {!editMode && (
+                <button
+                  onClick={openEdit}
+                  style={{ background: '#F8F9FA', border: '1.5px solid #e0e0e0', borderRadius: 8, padding: '6px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', color: '#333' }}
+                >
+                  ✏️ Modifier
+                </button>
+              )}
             </div>
 
-            <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid #f3f3f3', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <Link href="/shop" style={{ background: '#FFB800', color: '#111', fontWeight: 700, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', fontSize: 14 }}>
-                Continuer mes achats →
-              </Link>
-              <Link href="/cart" style={{ background: '#F8F9FA', color: '#111', fontWeight: 700, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', fontSize: 14 }}>
-                Mon panier
-              </Link>
-            </div>
+            {!editMode ? (
+              <>
+                <div className="ac-profile-grid">
+                  <div className="ac-profile-field">
+                    <div className="ac-profile-label">Prénom</div>
+                    <div className="ac-profile-value">{user.firstName}</div>
+                  </div>
+                  <div className="ac-profile-field">
+                    <div className="ac-profile-label">Nom</div>
+                    <div className="ac-profile-value">{user.lastName}</div>
+                  </div>
+                  <div className="ac-profile-field" style={{ gridColumn: '1 / -1' }}>
+                    <div className="ac-profile-label">Adresse email</div>
+                    <div className="ac-profile-value">{user.email}</div>
+                  </div>
+                  <div className="ac-profile-field">
+                    <div className="ac-profile-label">Téléphone</div>
+                    <div className="ac-profile-value">+216 {user.phone}</div>
+                  </div>
+                  <div className="ac-profile-field">
+                    <div className="ac-profile-label">Membre depuis</div>
+                    <div className="ac-profile-value">{new Date().toLocaleDateString('fr-TN', { month: 'long', year: 'numeric' })}</div>
+                  </div>
+                  {/* Adresse de livraison */}
+                  <div className="ac-address-block">
+                    <div className="ac-profile-label">📍 Adresse de livraison par défaut</div>
+                    {user.governorat ? (
+                      <div className="ac-address-value">
+                        {user.rue && <>{user.rue}<br /></>}
+                        {[user.localite, user.delegation, user.governorat].filter(Boolean).join(', ')}
+                        {user.codePostal && <> — {user.codePostal}</>}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 13, color: '#aaa', fontStyle: 'italic' }}>
+                        Aucune adresse enregistrée — cliquez sur ✏️ Modifier pour en ajouter une
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid #f3f3f3', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <Link href="/shop" style={{ background: '#FFB800', color: '#111', fontWeight: 700, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', fontSize: 14 }}>
+                    Continuer mes achats →
+                  </Link>
+                  <Link href="/cart" style={{ background: '#F8F9FA', color: '#111', fontWeight: 700, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', fontSize: 14 }}>
+                    Mon panier
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <form className="ac-edit-form" onSubmit={handleSaveProfile}>
+                {/* Infos de base */}
+                <div className="ac-edit-row">
+                  <div className="ac-edit-group">
+                    <label className="ac-edit-label">Prénom</label>
+                    <input className="ac-edit-input" value={editFirstName} onChange={e => setEditFirstName(e.target.value)} required />
+                  </div>
+                  <div className="ac-edit-group">
+                    <label className="ac-edit-label">Nom</label>
+                    <input className="ac-edit-input" value={editLastName} onChange={e => setEditLastName(e.target.value)} required />
+                  </div>
+                </div>
+
+                <div className="ac-edit-group">
+                  <label className="ac-edit-label">Email</label>
+                  <input className="ac-edit-input" value={user.email} disabled style={{ background: '#F8F9FA', color: '#888', cursor: 'not-allowed' }} />
+                  <span style={{ fontSize: 11, color: '#aaa' }}>L&apos;email ne peut pas être modifié</span>
+                </div>
+
+                <div className="ac-edit-group">
+                  <label className="ac-edit-label">Téléphone</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <span style={{ background: '#F8F9FA', border: '1.5px solid #e0e0e0', borderRadius: 9, padding: '10px 12px', fontSize: 14, fontWeight: 700, color: '#555', whiteSpace: 'nowrap' }}>+216</span>
+                    <input className="ac-edit-input" style={{ flex: 1 }} value={editPhone} onChange={e => setEditPhone(e.target.value)} placeholder="XX XXX XXX" />
+                  </div>
+                </div>
+
+                <hr className="ac-edit-divider" />
+                <div className="ac-edit-section-title">📍 Adresse de livraison par défaut</div>
+
+                <div className="ac-edit-row">
+                  <div className="ac-edit-group">
+                    <label className="ac-edit-label">Gouvernorat</label>
+                    <select className="ac-edit-select" value={editGoverorat} onChange={e => handleEditGovernoratChange(e.target.value)}>
+                      <option value="">Sélectionner...</option>
+                      {GOVERNORATS.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                  <div className="ac-edit-group">
+                    <label className="ac-edit-label">Délégation</label>
+                    <select className="ac-edit-select" value={editDelegation} onChange={e => handleEditDelegationChange(e.target.value)} disabled={!editGoverorat}>
+                      <option value="">Sélectionner...</option>
+                      {editDelegations.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="ac-edit-row">
+                  <div className="ac-edit-group">
+                    <label className="ac-edit-label">Localité</label>
+                    <select className="ac-edit-select" value={editLocalite} onChange={e => handleEditLocaliteChange(e.target.value)} disabled={!editDelegation}>
+                      <option value="">Sélectionner...</option>
+                      {editLocalities.map(l => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                  </div>
+                  <div className="ac-edit-group">
+                    <label className="ac-edit-label">Code postal</label>
+                    <input className="ac-edit-input" value={editCodePostal} readOnly placeholder="—" style={{ background: '#F8F9FA', color: '#888' }} />
+                  </div>
+                </div>
+
+                <div className="ac-edit-group">
+                  <label className="ac-edit-label">Rue / Adresse</label>
+                  <input className="ac-edit-input" value={editRue} onChange={e => setEditRue(e.target.value)} placeholder="Ex: 12 Rue de la République, Appt 3" />
+                </div>
+
+                <hr className="ac-edit-divider" />
+                <div className="ac-edit-section-title">🔒 Changer le mot de passe (optionnel)</div>
+
+                <div className="ac-edit-group">
+                  <label className="ac-edit-label">Mot de passe actuel</label>
+                  <input className="ac-edit-input" type="password" value={editCurPw} onChange={e => setEditCurPw(e.target.value)} placeholder="Requis si vous changez le mot de passe" autoComplete="current-password" />
+                </div>
+                <div className="ac-edit-row">
+                  <div className="ac-edit-group">
+                    <label className="ac-edit-label">Nouveau mot de passe</label>
+                    <input className="ac-edit-input" type="password" value={editNewPw} onChange={e => setEditNewPw(e.target.value)} placeholder="Min. 6 caractères" autoComplete="new-password" />
+                  </div>
+                  <div className="ac-edit-group">
+                    <label className="ac-edit-label">Confirmer</label>
+                    <input className="ac-edit-input" type="password" value={editConfPw} onChange={e => setEditConfPw(e.target.value)} placeholder="Répéter le nouveau mot de passe" autoComplete="new-password" />
+                  </div>
+                </div>
+
+                {editError   && <div className="ac-edit-error">✗ {editError}</div>}
+                {editSuccess && <div className="ac-edit-success">✓ Profil mis à jour avec succès !</div>}
+
+                <div className="ac-edit-actions">
+                  <button type="submit" className="ac-edit-save" disabled={editLoading}>
+                    {editLoading ? 'Enregistrement…' : 'Enregistrer les modifications'}
+                  </button>
+                  <button type="button" className="ac-edit-cancel" onClick={() => setEditMode(false)}>Annuler</button>
+                </div>
+              </form>
+            )}
           </div>
         )}
 

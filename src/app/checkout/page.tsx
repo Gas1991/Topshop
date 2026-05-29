@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ type Step = 1 | 2 | 3 | 4;
 
 export default function CheckoutPage() {
   const { items: cartItems, count: cartCount, total: cartSubtotal, clearCart } = useCart();
-  const { saveOrder } = useAuth();
+  const { user, saveOrder } = useAuth();
   const [step, setStep] = useState<Step>(2);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,6 +34,24 @@ export default function CheckoutPage() {
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoMsg, setPromoMsg] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Pré-remplir depuis le profil utilisateur connecté
+  useEffect(() => {
+    if (!user) return;
+    if (!prenom && user.firstName) setPrenom(user.firstName);
+    if (!nom    && user.lastName)  setNom(user.lastName);
+    if (!tel    && user.phone)     setTel(user.phone);
+    if (!governorat && user.governorat) {
+      setGovernorat(user.governorat);
+      if (user.delegation) {
+        setDelegation(user.delegation);
+        if (user.localite)   setLocalite(user.localite);
+        if (user.codePostal) setCodePostal(user.codePostal);
+      }
+    }
+    if (!rue && user.rue) setRue(user.rue);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const deliveryPrice = 10.000;
   const subtotal = cartSubtotal;
@@ -99,33 +117,103 @@ export default function CheckoutPage() {
     return Object.keys(e).length === 0;
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!validate()) return;
     setLoading(true);
-    setTimeout(() => {
-      const orderId = `TP-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 89999)}`;
-      saveOrder({
-        id: orderId,
-        date: new Date().toISOString(),
-        status: 'en_attente',
-        items: cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, img: i.img })),
-        subtotal,
-        delivery: deliveryPrice,
-        discount,
-        total,
-        prenom,
-        nom,
-        tel,
-        governorat,
-        delegation,
-        localite,
-        rue,
+
+    const newOrderId = `TP-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 89999)}`;
+
+    /* ── Création commande WooCommerce ── */
+    let wcOrderId: number | undefined;
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment_method: 'cod',
+          payment_method_title: 'Paiement à la livraison',
+          set_paid: false,
+          customer_note: note || '',
+          meta_data: [{ key: '_toprix_order_id', value: newOrderId }],
+          billing: {
+            first_name: prenom,
+            last_name: nom,
+            phone: '+216' + tel,
+            email: email || '',
+            address_1: rue,
+            address_2: localite || '',
+            city: delegation,
+            state: governorat,
+            postcode: codePostal || '',
+            country: 'TN',
+          },
+          shipping: {
+            first_name: prenom,
+            last_name: nom,
+            address_1: rue,
+            address_2: localite || '',
+            city: delegation,
+            state: governorat,
+            postcode: codePostal || '',
+            country: 'TN',
+          },
+          line_items: cartItems.map(item => ({
+            product_id: item.id,
+            quantity: item.qty,
+          })),
+          shipping_lines: [{
+            method_id: 'flat_rate',
+            method_title: 'Livraison standard 48–72h',
+            total: deliveryPrice.toFixed(2),
+          }],
+        }),
       });
-      setOrderId(orderId);
-      setLoading(false);
-      clearCart();
-      setStep(4);
-    }, 1800);
+      if (res.ok) {
+        const data = await res.json();
+        wcOrderId = data.id;
+      }
+    } catch { /* WC indisponible — commande sauvegardée localement quand même */ }
+
+    saveOrder({
+      id: newOrderId,
+      wcOrderId,
+      date: new Date().toISOString(),
+      status: 'en_attente',
+      items: cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, img: i.img })),
+      subtotal,
+      delivery: deliveryPrice,
+      discount,
+      total,
+      prenom,
+      nom,
+      tel,
+      governorat,
+      delegation,
+      localite,
+      rue,
+    });
+
+    setOrderId(newOrderId);
+    clearCart();
+
+    /* ── Email de confirmation (si email fourni) ── */
+    if (email) {
+      fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: email,
+          orderId: newOrderId,
+          prenom, nom, tel,
+          governorat, delegation, localite, rue,
+          items: cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, img: i.img })),
+          subtotal, delivery: deliveryPrice, discount, total,
+        }),
+      }).catch(() => {}); // non-bloquant
+    }
+
+    setLoading(false);
+    setStep(4);
   }
 
   if (cartCount === 0 && step !== 4) {

@@ -65,17 +65,80 @@ function ProductCard({ p }: { p: WCProduct }) {
   );
 }
 
+/* ── Pagination ─────────────────────────────────────────────────── */
+function Pagination({ currentPage, totalPages, baseUrl }: { currentPage: number; totalPages: number; baseUrl: string }) {
+  if (totalPages <= 1) return null;
+
+  function pageUrl(p: number) {
+    if (p === 1) return baseUrl;
+    return baseUrl.includes('?') ? `${baseUrl}&page=${p}` : `${baseUrl}?page=${p}`;
+  }
+
+  // Build visible page numbers with smart ellipsis
+  const pages: (number | '...')[] = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push('...');
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
+    if (currentPage < totalPages - 2) pages.push('...');
+    pages.push(totalPages);
+  }
+
+  return (
+    <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 32, flexWrap: 'wrap' }}>
+      {/* Précédent */}
+      {currentPage > 1 ? (
+        <a href={pageUrl(currentPage - 1)} style={pgStyle(false, false)}>← Précédent</a>
+      ) : (
+        <span style={{ ...pgStyle(false, false), opacity: 0.35, pointerEvents: 'none', cursor: 'default' }}>← Précédent</span>
+      )}
+
+      {/* Pages */}
+      {pages.map((p, i) =>
+        p === '...'
+          ? <span key={`ellipsis-${i}`} style={{ padding: '0 4px', color: '#aaa', fontSize: 14 }}>…</span>
+          : <a key={p} href={pageUrl(p as number)} style={pgStyle(p === currentPage, false)}>{p}</a>
+      )}
+
+      {/* Suivant */}
+      {currentPage < totalPages ? (
+        <a href={pageUrl(currentPage + 1)} style={pgStyle(false, false)}>Suivant →</a>
+      ) : (
+        <span style={{ ...pgStyle(false, false), opacity: 0.35, pointerEvents: 'none', cursor: 'default' }}>Suivant →</span>
+      )}
+    </nav>
+  );
+}
+
+function pgStyle(active: boolean, _: boolean): React.CSSProperties {
+  return {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    minWidth: 38, height: 38, padding: '0 10px',
+    borderRadius: 8, textDecoration: 'none', fontSize: 14, fontWeight: active ? 900 : 600,
+    background: active ? '#FFB800' : '#fff',
+    color: active ? '#111' : '#555',
+    border: `1.5px solid ${active ? '#FFB800' : '#e0e0e0'}`,
+    boxShadow: active ? '0 2px 6px rgba(255,184,0,.3)' : 'none',
+    transition: 'all .12s',
+  };
+}
+
 /* ── Main Component ─────────────────────────────────────────────── */
 interface ShopClientProps {
   products: WCProduct[];
   categories: WCCategory[];
   title: string;
   total: number;
+  currentPage: number;
+  totalPages: number;
+  baseUrl: string;
 }
 
 type SortKey = 'date' | 'price_asc' | 'price_desc' | 'rating' | 'name';
 
-export default function ShopClient({ products, categories, title, total }: ShopClientProps) {
+export default function ShopClient({ products, categories, title, total, currentPage, totalPages, baseUrl }: ShopClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -130,6 +193,7 @@ export default function ShopClient({ products, categories, title, total }: ShopC
     const params = new URLSearchParams(searchParams.toString());
     if (slug) params.set('cat', slug); else params.delete('cat');
     params.delete('s');
+    params.delete('page'); // reset pagination
     router.push(`/shop?${params.toString()}`);
   }
 
@@ -394,7 +458,10 @@ export default function ShopClient({ products, categories, title, total }: ShopC
 
         <div className="sc-title-row">
           <h1 className="sc-h1">{title}</h1>
-          <span className="sc-count"><strong>{filteredProducts.length}</strong> produits</span>
+          <span className="sc-count">
+            <strong>{total || filteredProducts.length}</strong> produit{total !== 1 ? 's' : ''}
+            {totalPages > 1 && <> — page <strong>{currentPage}</strong> sur <strong>{totalPages}</strong></>}
+          </span>
         </div>
 
         <div className="sc-layout">
@@ -446,6 +513,9 @@ export default function ShopClient({ products, categories, title, total }: ShopC
                 {filteredProducts.map(p => <ProductCard key={p.id} p={p} />)}
               </div>
             )}
+
+            {/* Pagination */}
+            <Pagination currentPage={currentPage} totalPages={totalPages} baseUrl={baseUrl} />
           </div>
         </div>
       </div>

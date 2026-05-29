@@ -13,10 +13,15 @@ export default function Header({ categories = [] }: HeaderProps) {
   const { count: cartCount } = useCart();
   const { user } = useAuth();
   const [query, setQuery] = useState('');
+  const [selectedCat, setSelectedCat] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) window.location.href = `/shop?s=${encodeURIComponent(query)}`;
+    const params = new URLSearchParams();
+    if (selectedCat) params.set('cat', selectedCat);
+    if (query.trim()) params.set('s', query.trim());
+    const qs = params.toString();
+    window.location.href = qs ? `/shop?${qs}` : '/shop';
   };
 
   return (
@@ -32,7 +37,7 @@ export default function Header({ categories = [] }: HeaderProps) {
             <span className="dot" />
             <a href="/account">Mon compte</a>
             <span className="dot" />
-            <a href="#">Suivre ma commande</a>
+            <a href="/suivi-commande">Suivre ma commande</a>
           </div>
         </div>
       </div>
@@ -46,7 +51,17 @@ export default function Header({ categories = [] }: HeaderProps) {
           </div>
 
           <form className="search-wrap" onSubmit={handleSearch}>
-            <div className="cat">Toutes catégories <I.chev s={10} /></div>
+            <select
+              className="cat"
+              value={selectedCat}
+              onChange={e => setSelectedCat(e.target.value)}
+              style={{ border: 0, outline: 0, background: '#fafafa', cursor: 'pointer', appearance: 'auto', fontFamily: 'inherit', fontSize: 13, color: 'var(--ink-2)', paddingRight: 8 }}
+            >
+              <option value="">Toutes catégories</option>
+              {categories.map(c => (
+                <option key={c.slug} value={c.slug}>{c.name}</option>
+              ))}
+            </select>
             <input
               placeholder="Rechercher des produits, marques et plus encore…"
               value={query}

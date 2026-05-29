@@ -18,6 +18,27 @@ async function wcFetch<T>(endpoint: string, params: Record<string, string | numb
   return res.json();
 }
 
+export interface PagedResult<T> {
+  data: T;
+  total: number;
+  totalPages: number;
+}
+
+async function wcFetchPaged<T>(endpoint: string, params: Record<string, string | number> = {}): Promise<PagedResult<T>> {
+  const url = new URL(`${WC_URL}/wp-json/wc/v3/${endpoint}`);
+  url.searchParams.set('consumer_key', WC_KEY);
+  url.searchParams.set('consumer_secret', WC_SECRET);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
+
+  const res = await fetch(url.toString(), { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`WC API error: ${res.status} ${endpoint}`);
+
+  const total      = parseInt(res.headers.get('X-WP-Total')      || '0', 10);
+  const totalPages = parseInt(res.headers.get('X-WP-TotalPages') || '1', 10);
+  const data       = await res.json() as T;
+  return { data, total, totalPages };
+}
+
 /* ── Types ─────────────────────────────────────────────────────── */
 export interface WCImage {
   id: number;
@@ -75,6 +96,8 @@ export function getBrand(p: WCProduct): string {
 }
 
 /* ── API calls ──────────────────────────────────────────────────── */
+const PER_PAGE = 24;
+
 export const api = {
   products: {
     latest: (limit = 8) =>
@@ -93,6 +116,19 @@ export const api = {
       const products = await wcFetch<WCProduct[]>('products', { slug });
       return products[0] || null;
     },
+
+    /* ── Paginées (pour /shop) ── */
+    latestPaged: (page = 1) =>
+      wcFetchPaged<WCProduct[]>('products', { orderby: 'date', order: 'desc', per_page: PER_PAGE, page, status: 'publish' }),
+
+    onSalePaged: (page = 1) =>
+      wcFetchPaged<WCProduct[]>('products', { on_sale: 1, orderby: 'date', order: 'desc', per_page: PER_PAGE, page, status: 'publish' }),
+
+    byCategoryPaged: (categoryId: number, page = 1) =>
+      wcFetchPaged<WCProduct[]>('products', { category: categoryId, per_page: PER_PAGE, page, status: 'publish', orderby: 'popularity', order: 'desc' }),
+
+    searchPaged: (query: string, page = 1) =>
+      wcFetchPaged<WCProduct[]>('products', { search: query, per_page: PER_PAGE, page, status: 'publish' }),
   },
 
   categories: {

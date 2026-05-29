@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import './topshop.css';
 import Header from '@/components/Header';
@@ -17,7 +18,29 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="fr">
+      <head>
+        {/* Google Tag Manager */}
+        <Script id="gtm-head" strategy="afterInteractive">{`
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-P5N7FR2J');
+        `}</Script>
+        {/* Google Analytics */}
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-965FZFQYSS" strategy="afterInteractive" />
+        <Script id="gtag-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-965FZFQYSS');
+        `}</Script>
+      </head>
       <body style={{ margin: 0, padding: 0, minHeight: '100vh' }}>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5N7FR2J" height="0" width="0" style={{ display: 'none', visibility: 'hidden' }} />
+        </noscript>
         <AuthProvider>
           <CartProvider>
             <Header categories={categories} />

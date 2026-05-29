@@ -104,7 +104,7 @@ export default function LoginPage() {
             </div>
 
             <div className="auth-forgot">
-              <a href="#">Mot de passe oublié ?</a>
+              <Link href="/account/forgot-password">Mot de passe oublié ?</Link>
             </div>
 
             <button className="auth-btn" disabled={loading}>

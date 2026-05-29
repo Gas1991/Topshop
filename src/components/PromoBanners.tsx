@@ -121,18 +121,24 @@ function BannerCard({ banner, index }: { banner: Banner; index: number }) {
         </h3>
 
         {/* Product image */}
-        <div className="relative mt-4 flex h-40 items-center justify-center sm:h-48">
+        <div className="relative mt-4 flex h-44 items-center justify-center sm:h-52">
           {/* Floor shadow */}
           <div
-            className="absolute bottom-2 left-1/2 h-4 w-3/5 -translate-x-1/2 rounded-[100%] bg-black/40 blur-xl transition-all duration-500 group-hover:w-2/3 group-hover:opacity-80"
+            className="absolute bottom-0 left-1/2 h-3 w-1/2 -translate-x-1/2 rounded-full bg-black/30 blur-xl transition-all duration-500 group-hover:w-3/5 group-hover:opacity-80"
             aria-hidden="true"
           />
-          <img
-            src={image}
-            alt={title}
-            className="relative max-h-full max-w-full object-contain drop-shadow-[0_18px_25px_rgba(0,0,0,0.45)] transition-transform duration-500 ease-out group-hover:-translate-y-1 group-hover:scale-[1.04]"
-            loading="lazy"
-          />
+          {image ? (
+            <div className="relative z-10 flex h-[85%] w-[85%] items-center justify-center rounded-2xl bg-white/95 p-4 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-transform duration-500 ease-out group-hover:-translate-y-1 group-hover:scale-[1.03]">
+              <img
+                src={image}
+                alt={title}
+                className="max-h-full max-w-full object-contain mix-blend-multiply"
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            <span className="relative z-10 text-6xl opacity-80">📦</span>
+          )}
         </div>
 
         {/* CTA + code */}
