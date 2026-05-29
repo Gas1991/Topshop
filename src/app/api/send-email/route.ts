@@ -216,7 +216,17 @@ function htmlPasswordReset(p: PasswordResetPayload): string {
 /* ── Route handler ──────────────────────────────────────────────── */
 type Payload = OrderConfirmPayload | OrderStatusPayload | WelcomePayload | PasswordResetPayload | ContactPayload;
 
+const SMTP_OK =
+  !!process.env.SMTP_USER &&
+  !!process.env.SMTP_PASSWORD &&
+  process.env.SMTP_PASSWORD !== 'CHANGER_MOT_DE_PASSE_ICI';
+
 export async function POST(req: NextRequest) {
+  if (!SMTP_OK) {
+    console.error('[send-email] SMTP not configured — set SMTP_USER and SMTP_PASSWORD env vars');
+    return NextResponse.json({ error: 'SMTP not configured' }, { status: 503 });
+  }
+
   try {
     const body: Payload = await req.json();
     const type = body.type ?? 'order_confirmation';
@@ -255,7 +265,8 @@ export async function POST(req: NextRequest) {
     await transporter.sendMail({ from: FROM, to: (body as { to: string }).to, subject, html });
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[send-email]', err);
-    return NextResponse.json({ error: 'Email send failed' }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[send-email] error:', msg);
+    return NextResponse.json({ error: 'Email send failed', detail: msg }, { status: 500 });
   }
 }

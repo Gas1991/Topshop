@@ -1,21 +1,15 @@
 export default function AProposPage() {
   const stats = [
     { icon: '📦', num: '44 000+', label: 'Produits' },
-    { icon: '🏪', num: '3', label: 'Boutiques partenaires' },
+    { icon: '😊', num: '10 000+', label: 'Clients satisfaits' },
     { icon: '🚚', num: '48h', label: 'Livraison moyenne' },
     { icon: '⭐', num: '4.8/5', label: 'Satisfaction client' },
   ];
 
   const values = [
-    { icon: '🤝', title: 'Confiance', desc: 'Produits 100% authentiques, vendus par des boutiques certifiées.' },
-    { icon: '💰', title: 'Meilleur prix', desc: 'Nous comparons les prix pour vous trouver la meilleure offre du marché tunisien.' },
+    { icon: '🤝', title: 'Confiance', desc: 'Produits 100% authentiques, sélectionnés avec soin pour vous garantir qualité et fiabilité.' },
+    { icon: '💰', title: 'Meilleur prix', desc: 'Nous sélectionnons les meilleures offres pour vous proposer les prix les plus compétitifs du marché tunisien.' },
     { icon: '🚀', title: 'Rapidité', desc: 'Livraison express partout en Tunisie sous 48h, avec suivi en temps réel.' },
-  ];
-
-  const partners = [
-    { name: 'Mytek', emoji: '🖥️', desc: 'Leader tunisien en informatique et électronique depuis 1993.' },
-    { name: 'Tunisianet', emoji: '🛒', desc: 'E-commerce tunisien spécialisé en high-tech et électroménager.' },
-    { name: 'Spacenet', emoji: '📡', desc: 'Spécialiste des réseaux, téléphonie et équipements professionnels.' },
   ];
 
   return (
@@ -59,21 +53,10 @@ export default function AProposPage() {
         .ap-value-card h3 { font-size: 16px; font-weight: 800; margin: 0 0 8px; }
         .ap-value-card p { font-size: 14px; color: #555; line-height: 1.6; margin: 0; }
 
-        /* Partners */
-        .ap-partners-head { font-size: 22px; font-weight: 900; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .ap-partners-head::before { content: ""; display: block; width: 6px; height: 26px; background: #FFB800; border-radius: 3px; }
-        .ap-partners-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-        .ap-partner-card { background: #fff; border-radius: 14px; padding: 28px 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-        .ap-partner-card .icon { font-size: 40px; margin-bottom: 12px; }
-        .ap-partner-card h3 { font-size: 18px; font-weight: 800; margin: 0 0 8px; }
-        .ap-partner-card p { font-size: 13px; color: #666; line-height: 1.6; margin: 0 0 16px; }
-        .ap-partner-card a { color: #FFB800; font-weight: 700; font-size: 13px; text-decoration: none; }
-        .ap-partner-card a:hover { text-decoration: underline; }
-
         @media (max-width: 900px) {
           .ap-stats { grid-template-columns: repeat(2, 1fr); }
           .ap-story { grid-template-columns: 1fr; }
-          .ap-values-grid, .ap-partners-grid { grid-template-columns: 1fr; }
+          .ap-values-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 640px) {
           .ap-hero { padding: 36px 20px; }
@@ -109,13 +92,13 @@ export default function AProposPage() {
           <div className="ap-story-text">
             <h2>Qui sommes-nous ?</h2>
             <p>
-              Toprix.tn est né d'une idée simple : regrouper les meilleures offres de Mytek, Tunisianet
-              et Spacenet en un seul endroit, pour que vous puissiez comparer et acheter sans vous déplacer.
+              shop.toprix.tn est né d&apos;une idée simple : vous offrir un accès rapide aux meilleurs
+              produits tech et électroménager en Tunisie, réunis en un seul endroit.
             </p>
             <p>
               Notre mission : vous offrir le meilleur prix, la meilleure qualité, et la meilleure expérience
-              d'achat en Tunisie. Nous travaillons avec les boutiques les plus fiables du pays pour vous
-              garantir des produits authentiques et une livraison rapide.
+              d&apos;achat en Tunisie. Nous sélectionnons rigoureusement chaque produit pour vous
+              garantir authenticité et livraison rapide.
             </p>
             <p>
               Depuis notre lancement en 2023, nous avons servi des milliers de clients satisfaits à travers
@@ -133,20 +116,6 @@ export default function AProposPage() {
                 <div className="icon">{v.icon}</div>
                 <h3>{v.title}</h3>
                 <p>{v.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <div className="ap-partners-head">Nos boutiques partenaires</div>
-          <div className="ap-partners-grid">
-            {partners.map((p, i) => (
-              <div key={i} className="ap-partner-card">
-                <div className="icon">{p.emoji}</div>
-                <h3>{p.name}</h3>
-                <p>{p.desc}</p>
-                <a href="/shop">Voir leurs produits →</a>
               </div>
             ))}
           </div>
