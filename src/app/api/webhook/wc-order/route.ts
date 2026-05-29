@@ -27,11 +27,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const order = JSON.parse(rawBody);
+    // WC envoie parfois un corps vide pour le ping de test
+    if (!rawBody.trim()) return NextResponse.json({ ok: true, skipped: true });
 
-    const email     = order.billing?.email as string | undefined;
-    const firstName = order.billing?.first_name as string | undefined;
-    const orderId   = order.number ?? order.id;
+    let order: Record<string, unknown>;
+    try { order = JSON.parse(rawBody); }
+    catch { return NextResponse.json({ ok: true, skipped: true }); }
+
+    const email     = (order.billing as Record<string, string> | undefined)?.email;
+    const firstName = (order.billing as Record<string, string> | undefined)?.first_name;
+    const orderId   = (order.number ?? order.id) as string | number | undefined;
     const status    = order.status as string | undefined;
 
     // N'envoyer que pour les statuts pertinents
@@ -40,18 +45,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
-    const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://topshop.tn';
-    await fetch(`${SITE}/api/send-email`, {
+    const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://shop.toprix.tn';
+    // Fire-and-forget — ne bloque pas la réponse au webhook
+    fetch(`${SITE}/api/send-email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type:    'order_status',
-        to:      email,
-        orderId: orderId,
-        prenom:  firstName || 'Client',
+        type:     'order_status',
+        to:       email,
+        orderId:  orderId,
+        prenom:   firstName || 'Client',
         wcStatus: status,
       }),
-    });
+    }).catch(() => {});
 
     return NextResponse.json({ ok: true });
   } catch (err) {
