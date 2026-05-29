@@ -5,16 +5,13 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://shop.toprix.tn';
 export const revalidate = 86400;
 
 const STATIC_PAGES = [
-  { path: '/',                 priority: '1.0', changefreq: 'daily'   },
-  { path: '/shop',             priority: '0.9', changefreq: 'hourly'  },
-  { path: '/suivi-commande',   priority: '0.7', changefreq: 'monthly' },
-  { path: '/a-propos',         priority: '0.5', changefreq: 'monthly' },
-  { path: '/contact',          priority: '0.6', changefreq: 'monthly' },
-  { path: '/livraison',        priority: '0.6', changefreq: 'monthly' },
-  { path: '/retours',          priority: '0.5', changefreq: 'monthly' },
-  { path: '/confidentialite',  priority: '0.3', changefreq: 'yearly'  },
-  { path: '/account/login',    priority: '0.4', changefreq: 'monthly' },
-  { path: '/account/register', priority: '0.4', changefreq: 'monthly' },
+  { path: '/',                priority: '1.0', changefreq: 'daily'   },
+  { path: '/shop',            priority: '0.9', changefreq: 'hourly'  },
+  { path: '/a-propos',        priority: '0.5', changefreq: 'monthly' },
+  { path: '/contact',         priority: '0.6', changefreq: 'monthly' },
+  { path: '/livraison',       priority: '0.6', changefreq: 'monthly' },
+  { path: '/retours',         priority: '0.5', changefreq: 'monthly' },
+  { path: '/confidentialite', priority: '0.3', changefreq: 'yearly'  },
 ];
 
 export async function GET() {
