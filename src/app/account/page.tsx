@@ -35,7 +35,7 @@ const STATUS_BG: Record<StoredOrder['status'], string> = {
 const STEPS: StoredOrder['status'][] = ['en_attente', 'confirmee', 'en_preparation', 'en_livraison', 'livree'];
 
 export default function AccountPage() {
-  const { user, logout, getOrders, updateProfile } = useAuth();
+  const { user, logout, getOrders, updateProfile, deleteAccount } = useAuth();
   const router = useRouter();
 
   const [tab, setTab] = useState<Tab>('profile');
@@ -60,6 +60,9 @@ export default function AccountPage() {
   const [editLoading, setEditLoading]     = useState(false);
   const [editError, setEditError]         = useState('');
   const [editSuccess, setEditSuccess]     = useState(false);
+
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const editDelegations = useMemo(() => {
     if (!editGoverorat) return [];
@@ -134,6 +137,13 @@ export default function AccountPage() {
 
   function handleLogout() {
     logout();
+    router.replace('/');
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteLoading(true);
+    await deleteAccount();
+    setDeleteLoading(false);
     router.replace('/');
   }
 
@@ -249,6 +259,18 @@ export default function AccountPage() {
         .ac-track-item-name { flex: 1; font-size: 13px; font-weight: 600; color: #111; line-height: 1.3; }
         .ac-track-item-price { font-size: 13px; font-weight: 800; white-space: nowrap; }
 
+        .ac-danger-zone { margin-top: 28px; padding-top: 20px; border-top: 1px solid #fee2e2; }
+        .ac-danger-title { font-size: 12px; font-weight: 700; color: #dc2626; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+        .ac-danger-desc { font-size: 13px; color: #888; margin-bottom: 12px; line-height: 1.5; }
+        .ac-delete-btn { background: transparent; border: 1.5px solid #dc2626; color: #dc2626; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .12s; }
+        .ac-delete-btn:hover { background: #dc2626; color: #fff; }
+        .ac-delete-confirm { background: #fff5f5; border: 1px solid #fca5a5; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .ac-delete-confirm-text { font-size: 13px; font-weight: 600; color: #111; }
+        .ac-delete-confirm-actions { display: flex; gap: 10px; }
+        .ac-delete-confirm-yes { background: #dc2626; color: #fff; border: 0; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .ac-delete-confirm-yes:disabled { opacity: .6; cursor: not-allowed; }
+        .ac-delete-confirm-no { background: transparent; border: 1.5px solid #e0e0e0; color: #555; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
         @media (max-width: 640px) {
           .ac-profile-grid { grid-template-columns: 1fr; }
           .ac-steps .ac-step-label { font-size: 10px; }
@@ -345,6 +367,27 @@ export default function AccountPage() {
                   <Link href="/cart" style={{ background: '#F8F9FA', color: '#111', fontWeight: 700, padding: '10px 20px', borderRadius: 8, textDecoration: 'none', fontSize: 14 }}>
                     Mon panier
                   </Link>
+                </div>
+
+                {/* Zone de danger */}
+                <div className="ac-danger-zone">
+                  <div className="ac-danger-title">⚠ Zone de danger</div>
+                  <div className="ac-danger-desc">La suppression de votre compte est définitive. Toutes vos données et commandes seront effacées.</div>
+                  {!deleteConfirm ? (
+                    <button className="ac-delete-btn" onClick={() => setDeleteConfirm(true)}>
+                      Supprimer mon compte
+                    </button>
+                  ) : (
+                    <div className="ac-delete-confirm">
+                      <div className="ac-delete-confirm-text">Êtes-vous sûr(e) ? Cette action est irréversible.</div>
+                      <div className="ac-delete-confirm-actions">
+                        <button className="ac-delete-confirm-yes" onClick={handleDeleteAccount} disabled={deleteLoading}>
+                          {deleteLoading ? 'Suppression…' : 'Oui, supprimer définitivement'}
+                        </button>
+                        <button className="ac-delete-confirm-no" onClick={() => setDeleteConfirm(false)}>Annuler</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             ) : (

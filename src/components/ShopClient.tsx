@@ -134,11 +134,12 @@ interface ShopClientProps {
   currentPage: number;
   totalPages: number;
   baseUrl: string;
+  activeCat?: string;
 }
 
 type SortKey = 'date' | 'price_asc' | 'price_desc' | 'rating' | 'name';
 
-export default function ShopClient({ products, categories, title, total, currentPage, totalPages, baseUrl }: ShopClientProps) {
+export default function ShopClient({ products, categories, title, total, currentPage, totalPages, baseUrl, activeCat }: ShopClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -190,14 +191,11 @@ export default function ShopClient({ products, categories, title, total, current
   const hasActiveFilters = priceMin || priceMax || onlyInStock || onlyOnSale || minRating > 0 || selectedBrands.length > 0;
 
   function navigateCat(slug: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (slug) params.set('cat', slug); else params.delete('cat');
-    params.delete('s');
-    params.delete('page'); // reset pagination
-    router.push(`/shop?${params.toString()}`);
+    if (!slug) router.push('/shop');
+    else router.push(`/categorie/${slug}`);
   }
 
-  const currentCat = searchParams.get('cat') || '';
+  const currentCat = activeCat ?? searchParams.get('cat') ?? '';
 
   const FilterSidebar = (
     <div className="sc-sidebar">
@@ -427,8 +425,42 @@ export default function ShopClient({ products, categories, title, total, current
           .sc-filter-btn { display: flex; }
         }
         @media (max-width: 640px) {
-          .sc-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-          .sc-h1 { font-size: 18px; }
+          .sc-wrap { padding: 0 12px 40px; }
+          .sc-breadcrumb { padding: 8px 0 4px; font-size: 11px; }
+          .sc-title-row { margin-bottom: 10px; gap: 6px; }
+          .sc-h1 { font-size: 17px; }
+          .sc-count { font-size: 12px; }
+
+          /* Sort bar: sticky, compact */
+          .sc-sort-bar {
+            position: sticky; top: 0; z-index: 20;
+            border-radius: 0; margin: 0 -12px 12px;
+            padding: 8px 12px; gap: 8px;
+            border-bottom: 1px solid #ececec;
+          }
+          .sc-sort-label { display: none; }
+          .sc-filter-btn { flex: 1; justify-content: center; padding: 8px 10px; font-size: 12px; }
+          .sc-sort-select { flex: 1; font-size: 12px; padding: 8px 8px; }
+
+          /* Grid */
+          .sc-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+          /* Cards: compact */
+          .sc-card { border-radius: 10px; }
+          .sc-card-img { aspect-ratio: 1; }
+          .sc-card-img img { padding: 8px; }
+          .sc-card-info { padding: 8px; }
+          .sc-brand { font-size: 10px; margin-bottom: 2px; }
+          .sc-name { font-size: 12px; min-height: 32px; margin-bottom: 4px; }
+          .sc-rating { margin-bottom: 4px; }
+          .sc-stars { font-size: 11px; }
+          .sc-price-row { margin-bottom: 8px; gap: 4px; }
+          .sc-price { font-size: 14px; }
+          .sc-old { font-size: 11px; }
+          .sc-add { height: 32px; font-size: 12px; border-radius: 7px; }
+
+          /* Drawer */
+          .sc-drawer { width: 85vw; }
         }
         @media (max-width: 360px) {
           .sc-grid { grid-template-columns: 1fr; }

@@ -162,6 +162,37 @@ function htmlWelcome(p: WelcomePayload): string {
   `);
 }
 
+/* ── Template: contact ──────────────────────────────────────────── */
+interface ContactPayload {
+  type: 'contact';
+  name: string; email: string; subject: string; message: string;
+}
+
+function htmlContact(p: ContactPayload): string {
+  return wrap(`
+    <h1 style="font-size:20px;font-weight:900;color:#111;margin:0 0 8px;">📩 Nouveau message de contact</h1>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ececec;border-radius:10px;overflow:hidden;margin-bottom:20px;">
+      <tr style="background:#F8F9FA;">
+        <td style="padding:10px 16px;font-size:12px;font-weight:700;color:#888;width:100px;">Nom</td>
+        <td style="padding:10px 16px;font-size:14px;color:#111;font-weight:600;">${p.name}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;font-size:12px;font-weight:700;color:#888;border-top:1px solid #f3f3f3;">Email</td>
+        <td style="padding:10px 16px;font-size:14px;color:#111;border-top:1px solid #f3f3f3;"><a href="mailto:${p.email}" style="color:#FFB800;">${p.email}</a></td>
+      </tr>
+      <tr style="background:#F8F9FA;">
+        <td style="padding:10px 16px;font-size:12px;font-weight:700;color:#888;border-top:1px solid #f3f3f3;">Sujet</td>
+        <td style="padding:10px 16px;font-size:14px;color:#111;font-weight:600;border-top:1px solid #f3f3f3;">${p.subject}</td>
+      </tr>
+    </table>
+
+    <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Message</div>
+    <div style="background:#FFFCEF;border:1.5px solid #FFB800;border-radius:10px;padding:16px 18px;font-size:14px;color:#111;line-height:1.7;white-space:pre-wrap;">${p.message}</div>
+    ${btn(`mailto:${p.email}`, `Répondre à ${p.name} →`)}
+  `);
+}
+
 /* ── Template: password_reset ───────────────────────────────────── */
 interface PasswordResetPayload {
   type: 'password_reset';
@@ -183,7 +214,7 @@ function htmlPasswordReset(p: PasswordResetPayload): string {
 }
 
 /* ── Route handler ──────────────────────────────────────────────── */
-type Payload = OrderConfirmPayload | OrderStatusPayload | WelcomePayload | PasswordResetPayload;
+type Payload = OrderConfirmPayload | OrderStatusPayload | WelcomePayload | PasswordResetPayload | ContactPayload;
 
 export async function POST(req: NextRequest) {
   try {
@@ -210,6 +241,13 @@ export async function POST(req: NextRequest) {
       const p = body as PasswordResetPayload;
       subject = '🔒 Réinitialisation de votre mot de passe — Topshop.tn';
       html    = htmlPasswordReset(p);
+    } else if (type === 'contact') {
+      const p = body as ContactPayload;
+      const ADMIN = process.env.SMTP_USER || '';
+      subject = `📩 [Contact] ${p.subject} — ${p.name}`;
+      html    = htmlContact(p);
+      await transporter.sendMail({ from: FROM, to: ADMIN, replyTo: p.email, subject, html });
+      return NextResponse.json({ ok: true });
     } else {
       return NextResponse.json({ error: 'Unknown type' }, { status: 400 });
     }

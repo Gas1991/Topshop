@@ -7,6 +7,8 @@ export default function ContactPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [open, setOpen] = useState<number | null>(null);
 
   const faqs = [
@@ -24,9 +26,22 @@ export default function ContactPage() {
     },
   ];
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSent(true);
+    setLoading(true); setError('');
+    try {
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'contact', name, email, subject, message }),
+      });
+      if (!res.ok) throw new Error();
+      setSent(true);
+    } catch {
+      setError('Erreur lors de l\'envoi. Veuillez réessayer ou nous contacter directement par email.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -70,6 +85,8 @@ export default function ContactPage() {
         .ct-submit { width: 100%; background: #FFB800; color: #111; border: 0; border-radius: 10px; height: 48px; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 0 #F2A900; transition: all .12s; }
         .ct-submit:hover { background: #F2A900; transform: translateY(-1px); }
         .ct-sent { background: #dcfce7; border-radius: 10px; padding: 16px; text-align: center; color: #16a34a; font-weight: 700; font-size: 15px; }
+        .ct-error { background: #fff5f5; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px 14px; font-size: 13px; color: #dc2626; font-weight: 600; margin-top: 12px; }
+        .ct-submit:disabled { background: #ddd; color: #888; box-shadow: none; cursor: not-allowed; transform: none; }
 
         /* Info side */
         .ct-info-side { background: #fff; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.07); }
@@ -178,7 +195,10 @@ export default function ContactPage() {
                   <label className="ct-label">Message *</label>
                   <textarea className="ct-textarea" required placeholder="Décrivez votre demande..." value={message} onChange={e => setMessage(e.target.value)} />
                 </div>
-                <button type="submit" className="ct-submit">Envoyer le message →</button>
+                <button type="submit" className="ct-submit" disabled={loading}>
+                  {loading ? 'Envoi en cours…' : 'Envoyer le message →'}
+                </button>
+                {error && <div className="ct-error">✗ {error}</div>}
               </form>
             )}
           </div>

@@ -94,7 +94,7 @@ function CategoryTile({ c }: { c: WCCategory }) {
   const icon = ICONS[c.slug];
   const label = CAT_LABELS[c.slug] || c.name;
   return (
-    <a data-tile href={`/shop?cat=${c.slug}`}
+    <a data-tile href={`/categorie/${c.slug}`}
       className="snap-start shrink-0 w-[140px] sm:w-[156px] group/tile" style={{ textDecoration: 'none' }}>
       <div className="relative w-full aspect-square overflow-hidden rounded-[28px] border-2 border-transparent group-hover/tile:border-[#FFB800] transition-[border-color,transform] duration-200 group-hover/tile:-translate-y-0.5"
         style={{ background: `linear-gradient(160deg, ${g1} 0%, ${g2} 100%)` }}>

@@ -23,37 +23,35 @@ export default function Footer() {
           <div>
             <h4>Service client</h4>
             <ul>
-              <li><Link href="#">Suivre ma commande</Link></li>
-              <li><Link href="#">Retours &amp; remboursements</Link></li>
-              <li><Link href="#">Modes de paiement</Link></li>
-              <li><Link href="#">FAQ</Link></li>
-              <li><Link href="#">Contactez-nous</Link></li>
+              <li><Link href="/suivi-commande">Suivre ma commande</Link></li>
+              <li><Link href="/retours">Retours &amp; remboursements</Link></li>
+              <li><Link href="/livraison">Modes de livraison</Link></li>
+              <li><Link href="/contact">Contactez-nous</Link></li>
             </ul>
           </div>
           <div>
             <h4>À propos de Topshop</h4>
             <ul>
-              <li><Link href="#">Qui sommes-nous</Link></li>
+              <li><Link href="/a-propos">Qui sommes-nous</Link></li>
               <li><Link href="/shop">Nos produits</Link></li>
-              <li><Link href="#">Conditions générales</Link></li>
-              <li><Link href="#">Politique de confidentialité</Link></li>
+              <li><Link href="/confidentialite">Politique de confidentialité</Link></li>
+              <li><Link href="/account">Mon compte</Link></li>
             </ul>
           </div>
           <div>
             <h4>Suivez-nous</h4>
             <ul>
-              <li><Link href="#">Facebook</Link></li>
-              <li><Link href="#">Instagram</Link></li>
-              <li><Link href="#">TikTok</Link></li>
-              <li><Link href="#">YouTube</Link></li>
+              <li><a href="https://www.facebook.com/topshop.tn" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+              <li><a href="https://www.instagram.com/topshop.tn" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+              <li><a href="https://www.tiktok.com/@topshop.tn" target="_blank" rel="noopener noreferrer">TikTok</a></li>
             </ul>
           </div>
         </div>
         <div className="bottom">
-          <div>© {new Date().getFullYear()} Topshop — Tous droits réservés. Tunisie.</div>
+          <div>© {new Date().getFullYear()} Topshop.tn — Tous droits réservés. Tunisie.</div>
           <div className="links">
-            <Link href="#">Confidentialité</Link>
-            <Link href="#">Conditions</Link>
+            <Link href="/confidentialite">Confidentialité</Link>
+            <Link href="/retours">Conditions de retour</Link>
           </div>
         </div>
       </div>

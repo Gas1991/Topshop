@@ -43,7 +43,7 @@ export async function GET() {
 
   const urls = clean.map(c => `
   <url>
-    <loc>${SITE}/shop?cat=${encodeURIComponent(c.slug)}</loc>
+    <loc>${SITE}/categorie/${encodeURIComponent(c.slug)}</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>`).join('');

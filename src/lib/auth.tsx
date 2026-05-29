@@ -74,6 +74,7 @@ interface AuthCtx {
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   register: (data: RegisterData) => Promise<{ ok: boolean; error?: string }>;
   updateProfile: (data: UpdateProfileData) => Promise<{ ok: boolean; error?: string }>;
+  deleteAccount: () => Promise<{ ok: boolean; error?: string }>;
   requestPasswordReset: (email: string) => Promise<{ ok: boolean; error?: string }>;
   resetPassword: (token: string, newPassword: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
@@ -204,6 +205,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { ok: true };
   }
 
+  async function deleteAccount(): Promise<{ ok: boolean; error?: string }> {
+    if (!user) return { ok: false, error: 'Non connecté' };
+    const accounts = getAccounts().filter(a => a.id !== user.id);
+    saveAccounts(accounts);
+    localStorage.removeItem('toprix_orders');
+    persistUser(null);
+    return { ok: true };
+  }
+
   async function requestPasswordReset(email: string): Promise<{ ok: boolean; error?: string }> {
     const accounts = getAccounts();
     const account = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
@@ -266,7 +276,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, updateProfile, requestPasswordReset, resetPassword, logout, getOrders, saveOrder }}>
+    <AuthContext.Provider value={{ user, login, register, updateProfile, deleteAccount, requestPasswordReset, resetPassword, logout, getOrders, saveOrder }}>
       {children}
     </AuthContext.Provider>
   );
