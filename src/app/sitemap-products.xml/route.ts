@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const SITE      = process.env.NEXT_PUBLIC_SITE_URL   || 'https://topshop.tn';
+const SITE      = process.env.NEXT_PUBLIC_SITE_URL   || 'https://shop.toprix.tn';
 const WC_URL    = process.env.NEXT_PUBLIC_WC_URL     || 'https://shop.toprix.tn';
 const WC_KEY    = process.env.WC_CONSUMER_KEY         || '';
 const WC_SECRET = process.env.WC_CONSUMER_SECRET      || '';

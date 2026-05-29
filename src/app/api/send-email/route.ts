@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
   tls: { rejectUnauthorized: false },
 });
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://topshop.tn';
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://shop.toprix.tn';
 const FROM = process.env.SMTP_FROM || 'Topshop.tn <toprix@oven-cleaner.serv00.net>';
 const YEAR = new Date().getFullYear();
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://topshop.tn';
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://shop.toprix.tn';
 
 export const revalidate = 86400;
 

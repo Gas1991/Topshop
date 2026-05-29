@@ -6,7 +6,7 @@ import crypto from 'crypto';
  *
  * Configure dans WC Admin → WooCommerce → Paramètres → Avancé → Webhooks
  *   Sujet  : order.updated
- *   URL    : https://topshop.tn/api/webhook/wc-order
+ *   URL    : https://shop.toprix.tn/api/webhook/wc-order
  *   Secret : valeur de WEBHOOK_SECRET dans .env.local
  */
 

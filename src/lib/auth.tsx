@@ -219,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tokens.push({ token, email: email.toLowerCase(), expiry });
     localStorage.setItem('toprix_reset_tokens', JSON.stringify(tokens));
 
-    const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://topshop.tn';
+    const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://shop.toprix.tn';
     const resetLink = `${SITE}/account/reset-password?token=${token}`;
 
     try {
