@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import type { WCProduct } from '@/lib/woocommerce';
 import { getProductImage } from '@/lib/woocommerce';
 import { useCart } from '@/lib/cart';
@@ -18,7 +19,6 @@ function Stars({ value }: { value: number }) {
 export default function ProductPageClient({ product }: { product: WCProduct }) {
   const { addItem } = useCart();
   const [qty, setQty] = useState(1);
-  const [delivery, setDelivery] = useState<'standard' | 'express'>('express');
   const [wished, setWished] = useState(false);
   const [activeTab, setActiveTab] = useState<'desc' | 'spec' | 'avis'>('desc');
   const [added, setAdded] = useState(false);
@@ -35,14 +35,10 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
   const rating = parseFloat(product.average_rating) || 0;
   const brand = product.tags?.find(t => t.name.length < 20)?.name || '';
 
+  const itemData = { id: Number(product.id), slug: product.slug, name: product.name, price, img: displayImg };
+
   function handleAdd() {
-    addItem({
-      id: Number(product.id),
-      slug: product.slug,
-      name: product.name,
-      price,
-      img: displayImg,
-    });
+    addItem(itemData, qty);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   }
@@ -68,7 +64,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
         /* Gallery */
         .pp-gallery { display: flex; flex-direction: column; gap: 12px; }
         .pp-main-img { position: relative; aspect-ratio: 1; background: #F8F9FA; border-radius: 14px; overflow: hidden; cursor: zoom-in; display: flex; align-items: center; justify-content: center; }
-        .pp-main-img img { width: 100%; height: 100%; object-fit: contain; padding: 20px; transition: transform .3s; mix-blend-mode: multiply; }
+        .pp-main-img img { transition: transform .3s; }
         .pp-main-img:hover img { transform: scale(1.05); }
         .pp-disc-badge { position: absolute; top: 14px; left: 14px; background: #E2231A; color: #fff; font-weight: 800; font-size: 12px; padding: 5px 10px; border-radius: 6px; z-index: 2; }
         .pp-wish-btn { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; background: #fff; border: 1px solid #ececec; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: all .15s; box-shadow: 0 2px 6px rgba(0,0,0,.08); z-index: 2; }
@@ -209,7 +205,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
           {product.categories[0] && (
             <>
               <span className="sep">/</span>
-              <a href={`/shop?cat=${product.categories[0].slug}`}>{product.categories[0].name}</a>
+              <a href={`/categorie/${product.categories[0].slug}`}>{product.categories[0].name}</a>
             </>
           )}
           <span className="sep">/</span>
@@ -230,7 +226,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
                 {wished ? '❤' : '♡'}
               </button>
               {displayImg
-                ? <img src={displayImg} alt={product.name} />
+                ? <Image src={displayImg} alt={product.name} fill sizes="(max-width: 900px) 100vw, 55vw" style={{ objectFit: 'contain', padding: 20, mixBlendMode: 'multiply' }} />
                 : <span style={{ fontSize: 80 }}>📦</span>}
             </div>
             {images.length > 1 && (
@@ -241,7 +237,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
                     className={`pp-thumb${activeImg === i ? ' active' : ''}`}
                     onClick={() => setActiveImg(i)}
                   >
-                    <img src={img.src} alt={product.name} />
+                    <Image src={img.src} alt={product.name} width={48} height={48} style={{ objectFit: 'contain', mixBlendMode: 'multiply' }} />
                   </button>
                 ))}
               </div>
@@ -307,7 +303,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
               <button className={`pp-btn pp-btn-primary${added ? ' added' : ''}`} onClick={handleAdd}>
                 {added ? '✓ Ajouté au panier !' : '🛒 Ajouter au panier'}
               </button>
-              <a href="/checkout" className="pp-btn pp-btn-secondary" onClick={() => addItem({ id: Number(product.id), slug: product.slug, name: product.name, price, img: displayImg })}>
+              <a href="/checkout" className="pp-btn pp-btn-secondary" onClick={() => addItem(itemData, qty)}>
                 ⚡ Acheter maintenant
               </a>
               <button className={`pp-btn pp-btn-tertiary${wished ? ' on' : ''}`} onClick={() => setWished(!wished)}>
@@ -358,10 +354,17 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
             {activeTab === 'spec' && (
               <table className="pp-spec-table">
                 <tbody>
+                  {brand && <tr><td>Marque</td><td>{brand}</td></tr>}
                   {product.categories.map(c => (
                     <tr key={c.id}><td>Catégorie</td><td>{c.name}</td></tr>
                   ))}
                   {product.sku && <tr><td>Référence</td><td>{product.sku}</td></tr>}
+                  {product.meta_data
+                    ?.filter(m => !m.key.startsWith('_') && m.value && typeof m.value === 'string' && m.value.length < 200)
+                    .map(m => (
+                      <tr key={m.key}><td>{m.key.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())}</td><td>{m.value}</td></tr>
+                    ))
+                  }
                   <tr>
                     <td>Disponibilité</td>
                     <td style={{ color: product.stock_status === 'instock' ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
@@ -378,14 +381,16 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
                 <div style={{ fontWeight: 700, fontSize: 16, marginTop: 12, color: '#111' }}>
                   {product.rating_count > 0 ? `${product.rating_count} avis clients` : 'Aucun avis pour le moment'}
                 </div>
-                <a
-                  href={`/produit/${product.slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: '#FFB800', fontWeight: 700, fontSize: 14, marginTop: 12, display: 'inline-block' }}
-                >
-                  Voir sur le site officiel →
-                </a>
+                {product.permalink && (
+                  <a
+                    href={product.permalink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#FFB800', fontWeight: 700, fontSize: 14, marginTop: 12, display: 'inline-block' }}
+                  >
+                    Voir les avis sur le site officiel →
+                  </a>
+                )}
               </div>
             )}
           </div>
@@ -405,7 +410,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
           href="/checkout"
           className="pp-btn pp-btn-secondary"
           style={{ flex: 1 }}
-          onClick={() => addItem({ id: Number(product.id), slug: product.slug, name: product.name, price, img: displayImg })}
+          onClick={() => addItem(itemData, qty)}
         >
           Acheter
         </a>

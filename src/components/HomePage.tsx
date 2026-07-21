@@ -96,7 +96,7 @@ function CategoryBar({ cats, active, setActive }: {
     <section className="cat-bar">
       <div className="inner">
         {cats.map((c) => (
-          <Link key={c.slug} href={`/shop?cat=${c.slug}`}
+          <Link key={c.slug} href={`/categorie/${c.slug}`}
             className={'cat-tile' + (active === c.slug ? ' active' : '')}
             onClick={() => setActive(c.slug)}>
             <span className="cat-circle">

@@ -14,7 +14,7 @@ interface CartCtx {
   items: CartItem[];
   count: number;
   total: number;
-  addItem: (item: Omit<CartItem, 'qty'>) => void;
+  addItem: (item: Omit<CartItem, 'qty'>, qty?: number) => void;
   removeItem: (id: number) => void;
   updateQty: (id: number, qty: number) => void;
   clearCart: () => void;
@@ -43,11 +43,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(KEY, JSON.stringify(items));
   }, [items, ready]);
 
-  const addItem = useCallback((item: Omit<CartItem, 'qty'>) => {
+  const addItem = useCallback((item: Omit<CartItem, 'qty'>, qty: number = 1) => {
     setItems(prev => {
       const existing = prev.find(i => i.id === item.id);
-      if (existing) return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
-      return [...prev, { ...item, qty: 1 }];
+      if (existing) return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + qty } : i);
+      return [...prev, { ...item, qty }];
     });
   }, []);
 

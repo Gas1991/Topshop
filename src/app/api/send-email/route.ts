@@ -219,7 +219,8 @@ type Payload = OrderConfirmPayload | OrderStatusPayload | WelcomePayload | Passw
 const SMTP_OK =
   !!process.env.SMTP_USER &&
   !!process.env.SMTP_PASSWORD &&
-  process.env.SMTP_PASSWORD !== 'CHANGER_MOT_DE_PASSE_ICI';
+  !process.env.SMTP_PASSWORD.startsWith('REMPLACER') &&
+  !process.env.SMTP_PASSWORD.startsWith('CHANGER');
 
 export async function POST(req: NextRequest) {
   if (!SMTP_OK) {
