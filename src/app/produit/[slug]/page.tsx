@@ -104,13 +104,21 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: toJsonLdScript(jsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        dangerouslySetInnerHTML={{ __html: toJsonLdScript(faqLd) }}
       />
       <ProductPageClient product={product} />
     </>
   );
+}
+
+/** JSON.stringify pour injection dans un <script> : echappe '<' pour qu'un nom
+ * ou une description contenant "</script>" ne puisse jamais casser le tag et
+ * injecter du HTML/JS (XSS). < reste un JSON valide identique une fois
+ * reparse. */
+function toJsonLdScript(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c');
 }
