@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
           j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','GTM-P5N7FR2J');
+          })(window,document,'script','dataLayer','GTM-58BMKH4M');
         `}</Script>
         {/* Google Analytics */}
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-965FZFQYSS" strategy="afterInteractive" />
@@ -58,7 +58,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body style={{ margin: 0, padding: 0, minHeight: '100vh' }}>
         {/* Google Tag Manager (noscript) */}
         <noscript>
-          <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5N7FR2J" height="0" width="0" style={{ display: 'none', visibility: 'hidden' }} />
+          <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-58BMKH4M" height="0" width="0" style={{ display: 'none', visibility: 'hidden' }} />
         </noscript>
         {/* Meta Pixel (noscript) */}
         <noscript>
