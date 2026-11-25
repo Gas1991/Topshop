@@ -13,13 +13,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const image = getProductImage(product);
   const canonical = `${SITE_URL}/produit/${slug}`;
   return {
-    title: `${product.name} — Toprix.tn`,
+    title: `${product.name} — Topshop.tn`,
     description: stripHtml(product.short_description || product.description, 160)
       || `Achetez ${product.name} en Tunisie. Paiement à la livraison.`,
     alternates: { canonical },
     openGraph: {
       title: product.name,
-      description: `${product.name} à ${parseFloat(product.price).toFixed(3)} TND — Toprix.tn`,
+      description: `${product.name} à ${parseFloat(product.price).toFixed(3)} TND — Topshop.tn`,
       url: canonical,
       ...(image ? { images: [{ url: image }] } : {}),
     },
@@ -63,7 +63,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       availability: product.stock_status === 'instock'
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
-      seller: { '@type': 'Organization', name: 'Toprix' },
+      seller: { '@type': 'Organization', name: 'Topshop.tn' },
     },
     ...(rating > 0 && product.rating_count > 0 ? {
       aggregateRating: {

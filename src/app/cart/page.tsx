@@ -117,7 +117,7 @@ export default function CartPage() {
             </Link>
             <div className="cart-badges">
               <div className="cart-trust">💵 Paiement à la livraison</div>
-              <Link className="cart-trust" href="/retours">🔄 Retours possibles</Link>
+              <Link className="cart-trust" href="/retours">🔄 Retour 15 jours</Link>
             </div>
           </div>
         </div>

@@ -106,7 +106,7 @@ function PromoStrip() {
       <div className="inner">
         <span><I.shield s={14} /> Paiement <strong>à la livraison</strong></span>
         <span><I.truck s={14} /> Livraison <strong>partout en Tunisie</strong> en 48 à 72 h</span>
-        <span><I.ret s={14} /> <Link href="/retours">Retours <strong>possibles</strong></Link></span>
+        <span><I.ret s={14} /> <Link href="/retours">Retours sous <strong>15 jours</strong></Link></span>
       </div>
     </div>
   );

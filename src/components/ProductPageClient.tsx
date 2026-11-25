@@ -340,7 +340,7 @@ export default function ProductPageClient({ product, similar = [] }: { product: 
             {/* Trust badges */}
             <div className="pp-trust-row">
               <div className="pp-trust-item"><span>💵</span>Paiement à la livraison</div>
-              <a className="pp-trust-item" href="/retours"><span>🔄</span>Retours possibles</a>
+              <a className="pp-trust-item" href="/retours"><span>🔄</span>Retour 15 jours</a>
               <div className="pp-trust-item"><span>🚚</span>Livraison 48–72h</div>
             </div>
 

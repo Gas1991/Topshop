@@ -32,9 +32,6 @@ export default function CheckoutPage() {
   const [codePostal, setCodePostal] = useState('');
   const [rue, setRue] = useState('');
   const [note, setNote] = useState('');
-  const [promo, setPromo] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
-  const [promoMsg, setPromoMsg] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [editingAddress, setEditingAddress] = useState(false);
 
@@ -61,8 +58,7 @@ export default function CheckoutPage() {
 
   const deliveryPrice = 10.000;
   const subtotal = cartSubtotal;
-  const discount = promoApplied ? subtotal * 0.1 : 0;
-  const total = subtotal + deliveryPrice - discount;
+  const total = subtotal + deliveryPrice;
 
   /* Derived location lists */
   const delegations = useMemo(() => {
@@ -99,16 +95,6 @@ export default function CheckoutPage() {
       e => e.delegation === delegation && e.localite === val
     );
     setCodePostal(entry?.cp ?? '');
-  }
-
-  function applyPromo() {
-    if (promo.toUpperCase() === 'TOPRIX10') {
-      setPromoApplied(true);
-      setPromoMsg('Code appliqué ! -10% sur votre commande');
-    } else {
-      setPromoApplied(false);
-      setPromoMsg('Code invalide ou expiré');
-    }
   }
 
   function validate() {
@@ -201,7 +187,7 @@ export default function CheckoutPage() {
       items: cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, img: i.img })),
       subtotal,
       delivery: deliveryPrice,
-      discount,
+      discount: 0,
       total,
       prenom,
       nom,
@@ -226,7 +212,7 @@ export default function CheckoutPage() {
           prenom, nom, tel,
           governorat, delegation, localite, rue,
           items: cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, img: i.img })),
-          subtotal, delivery: deliveryPrice, discount, total,
+          subtotal, delivery: deliveryPrice, discount: 0, total,
         }),
       }).catch(() => {}); // non-bloquant
     }
@@ -310,12 +296,6 @@ export default function CheckoutPage() {
           <span>Livraison</span>
           <span>{deliveryPrice.toFixed(3)} TND</span>
         </div>
-        {promoApplied && (
-          <div className="ck-total-row green">
-            <span>Réduction (-10%)</span>
-            <span>-{discount.toFixed(3)} TND</span>
-          </div>
-        )}
         <div className="ck-total-row total">
           <span>TOTAL</span>
           <span>{total.toFixed(3)} TND</span>
@@ -323,7 +303,7 @@ export default function CheckoutPage() {
       </div>
       <div className="ck-badges">
         <div className="ck-badge-item">💵 Paiement à la livraison</div>
-        <Link className="ck-badge-item" href="/retours">🔄 Retours possibles</Link>
+        <Link className="ck-badge-item" href="/retours">🔄 Retour 15 jours</Link>
       </div>
     </div>
   );
@@ -393,16 +373,6 @@ export default function CheckoutPage() {
         .ck-radio-sub { font-size: 12px; color: #888; margin-top: 2px; }
         .ck-radio-price { font-size: 14px; font-weight: 800; color: #111; white-space: nowrap; }
 
-        /* Promo */
-        .ck-promo { display: flex; gap: 10px; margin-top: 16px; }
-        .ck-promo-input { flex: 1; min-width: 0; border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; }
-        .ck-promo-input:focus { border-color: #FFB800; }
-        .ck-promo-btn { background: #111; color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-        .ck-promo-btn:hover { background: #000; }
-        .ck-promo-msg { font-size: 12px; font-weight: 700; margin-top: 8px; }
-        .ck-promo-msg.ok { color: #16a34a; }
-        .ck-promo-msg.err { color: #dc2626; }
-
         /* CTA */
         .ck-cta { margin-top: 20px; }
         .ck-cta-btn { width: 100%; height: 56px; background: #FFB800; color: #111; border: 0; border-radius: 12px; font-size: 17px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #F2A900; transition: all .12s; display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -449,7 +419,7 @@ export default function CheckoutPage() {
           .ck-mobile-summary { display: flex; }
           .ck-mobile-cta { display: block; position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 14px; background: #fff; border-top: 1px solid #ececec; box-shadow: 0 -4px 12px rgba(0,0,0,.08); z-index: 50; }
           .ck-cta { display: none; }
-          .ck-input, .ck-select, .ck-textarea, .ck-tel-input, .ck-promo-input { font-size: 16px; min-height: 46px; }
+          .ck-input, .ck-select, .ck-textarea, .ck-tel-input { font-size: 16px; min-height: 46px; }
           .ck-wrap { padding-bottom: 24px; }
           .ck-wrap > .ck-layout .ck-submit-err { display: none; }
         }
@@ -714,21 +684,6 @@ export default function CheckoutPage() {
                 💬 Une question avant de commander ? Écrivez-nous
               </a>
 
-              {/* Code promo */}
-              <div className="ck-promo">
-                <input
-                  className="ck-promo-input"
-                  placeholder="Code promo"
-                  value={promo}
-                  onChange={e => setPromo(e.target.value)}
-                />
-                <button className="ck-promo-btn" onClick={applyPromo}>Appliquer</button>
-              </div>
-              {promoMsg && (
-                <div className={`ck-promo-msg${promoApplied ? ' ok' : ' err'}`}>
-                  {promoApplied ? '✓ ' : '✗ '}{promoMsg}
-                </div>
-              )}
             </div>
 
             {submitError && <div className="ck-submit-err" role="alert">{submitError}</div>}

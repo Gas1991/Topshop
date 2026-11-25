@@ -2,7 +2,7 @@ export default function ConfidentialitePage() {
   const sections = [
     {
       title: '1. Données collectées',
-      content: `Nous collectons les informations suivantes lorsque vous utilisez Toprix.tn :\n\n• Informations d'identification : nom, prénom, adresse email, numéro de téléphone\n• Informations de livraison : adresse postale, gouvernorat, délégation\n• Données de transaction : historique des commandes, modes de paiement (sans numéros de carte)\n• Données de navigation : adresse IP, cookies, pages visitées, produits consultés\n• Données de compte : identifiants de connexion (mots de passe chiffrés)`,
+      content: `Nous collectons les informations suivantes lorsque vous utilisez Topshop.tn :\n\n• Informations d'identification : nom, prénom, adresse email, numéro de téléphone\n• Informations de livraison : adresse postale, gouvernorat, délégation\n• Données de transaction : historique des commandes, modes de paiement (sans numéros de carte)\n• Données de navigation : adresse IP, cookies, pages visitées, produits consultés\n• Données de compte : identifiants de connexion (mots de passe chiffrés)`,
     },
     {
       title: '2. Utilisation des données',
@@ -10,7 +10,7 @@ export default function ConfidentialitePage() {
     },
     {
       title: '3. Partage avec des tiers',
-      content: `Toprix.tn ne vend jamais vos données personnelles. Nous partageons uniquement :\n\n• Avec nos partenaires logistiques (Aramex, GLS) pour assurer la livraison\n• Avec nos boutiques partenaires (Mytek, Tunisianet, Spacenet) pour traiter vos commandes\n• Avec les autorités judiciaires si requis par la loi tunisienne\n\nTous nos partenaires sont soumis à des accords de confidentialité stricts.`,
+      content: `Topshop.tn ne vend jamais vos données personnelles. Nous partageons uniquement :\n\n• Avec nos partenaires logistiques (Aramex, GLS) pour assurer la livraison\n• Avec nos boutiques partenaires (Mytek, Tunisianet, Spacenet) pour traiter vos commandes\n• Avec les autorités judiciaires si requis par la loi tunisienne\n\nTous nos partenaires sont soumis à des accords de confidentialité stricts.`,
     },
     {
       title: '4. Cookies',
@@ -95,7 +95,7 @@ export default function ConfidentialitePage() {
         ))}
 
         <div className="cp-footer-note">
-          Cette politique de confidentialité est régie par la loi organique tunisienne n° 2004-63 du 27 juillet 2004 relative à la protection des données à caractère personnel. En utilisant Toprix.tn, vous acceptez les termes de cette politique.
+          Cette politique de confidentialité est régie par la loi organique tunisienne n° 2004-63 du 27 juillet 2004 relative à la protection des données à caractère personnel. En utilisant Topshop.tn, vous acceptez les termes de cette politique.
         </div>
       </div>
     </>

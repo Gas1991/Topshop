@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { MESSENGER_URL } from '@/lib/messenger';
 
 export default function ContactPage() {
   const [subject, setSubject] = useState('');
@@ -14,7 +15,7 @@ export default function ContactPage() {
   const faqs = [
     {
       q: 'Comment suivre ma commande ?',
-      a: 'Après confirmation de votre commande, vous recevrez un SMS avec un numéro de suivi. Vous pouvez également vous connecter à votre compte Toprix et consulter la section "Mes commandes".',
+      a: 'Notre équipe vous contacte pour confirmer votre commande. Vous pouvez aussi vous connecter à votre compte Topshop et consulter la section "Mes commandes".',
     },
     {
       q: 'Quel est le délai de livraison ?',
@@ -22,7 +23,7 @@ export default function ContactPage() {
     },
     {
       q: 'Comment retourner un produit ?',
-      a: 'Contactez notre service client dans les 30 jours suivant la réception. Nous vous enverrons une étiquette de retour. Le remboursement est effectué sous 5-7 jours ouvrés après réception et inspection du produit.',
+      a: 'Contactez notre service client dans les 15 jours suivant la réception. Nous vous enverrons une étiquette de retour. Le remboursement est effectué sous 5-7 jours ouvrés après réception et inspection du produit.',
     },
   ];
 
@@ -65,7 +66,7 @@ export default function ContactPage() {
         .ct-info-card h3 { font-size: 15px; font-weight: 800; margin: 0 0 8px; }
         .ct-info-card p { font-size: 14px; color: #555; margin: 0 0 4px; }
         .ct-info-card .sub { font-size: 12px; color: #888; }
-        .ct-chat-btn { background: #FFB800; color: #111; border: 0; border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .ct-chat-btn { display: inline-block; text-decoration: none; background: #FFB800; color: #111; border: 0; border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .ct-chat-btn:hover { background: #F2A900; }
 
         /* 2-col */
@@ -144,12 +145,6 @@ export default function ContactPage() {
         {/* Contact cards */}
         <div className="ct-cards">
           <div className="ct-info-card">
-            <div className="icon">📞</div>
-            <h3>Téléphone</h3>
-            <p>+216 70 100 200</p>
-            <span className="sub">Lun-Sam 8h-20h</span>
-          </div>
-          <div className="ct-info-card">
             <div className="icon">📧</div>
             <h3>Email</h3>
             <p>contact@toprix.tn</p>
@@ -157,9 +152,9 @@ export default function ContactPage() {
           </div>
           <div className="ct-info-card">
             <div className="icon">💬</div>
-            <h3>Chat en live</h3>
-            <p>Disponible maintenant</p>
-            <button className="ct-chat-btn">Démarrer le chat</button>
+            <h3>Messenger</h3>
+            <p>Écrivez-nous</p>
+            <a className="ct-chat-btn" href={MESSENGER_URL} target="_blank" rel="noopener noreferrer">Ouvrir Messenger</a>
           </div>
         </div>
 

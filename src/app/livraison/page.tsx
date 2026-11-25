@@ -15,11 +15,11 @@ export default function LivraisonPage() {
     },
     {
       title: 'Suivi de commande',
-      content: 'Après votre commande, notre équipe vous contacte pour la confirmer. Vous pouvez la suivre dans votre espace client ou en contactant notre service client au +216 70 100 200.',
+      content: 'Après votre commande, notre équipe vous contacte pour la confirmer. Vous pouvez la suivre dans votre espace client ou en nous écrivant sur Messenger.',
     },
     {
       title: 'En cas de retard',
-      content: 'Si votre colis ne vous a pas été livré dans les délais annoncés, contactez-nous immédiatement par téléphone ou email. Nous localiserons votre colis et vous fournirons une mise à jour. En cas de retard de plus de 2 jours ouvrés, vous bénéficierez d\'un bon de réduction sur votre prochaine commande.',
+      content: 'Si votre colis ne vous a pas été livré dans les délais annoncés, contactez-nous immédiatement par email ou sur Messenger. Nous localiserons votre colis et vous fournirons une mise à jour. En cas de retard de plus de 2 jours ouvrés, vous bénéficierez d\'un bon de réduction sur votre prochaine commande.',
     },
   ];
 

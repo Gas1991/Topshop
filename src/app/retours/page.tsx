@@ -1,8 +1,8 @@
 export default function RetoursPage() {
   const conditions = [
-    { motif: 'Défaut de fabrication', delai: '30 jours', remb: '100% + frais retour offerts' },
+    { motif: 'Défaut de fabrication', delai: '15 jours', remb: '100% + frais retour offerts' },
     { motif: 'Erreur de commande', delai: '15 jours', remb: '100%' },
-    { motif: 'Changement d\'avis', delai: '7 jours', remb: '90% (frais retour déduits)' },
+    { motif: 'Changement d\'avis', delai: '15 jours', remb: '90% (frais retour déduits)' },
   ];
 
   const excluded = [
@@ -14,7 +14,7 @@ export default function RetoursPage() {
   ];
 
   const steps = [
-    { icon: '📞', title: 'Contactez-nous', desc: 'Appelez le +216 70 100 200 ou envoyez un email à contact@toprix.tn' },
+    { icon: '📞', title: 'Contactez-nous', desc: 'Envoyez un email à contact@toprix.tn ou écrivez-nous sur Messenger' },
     { icon: '📦', title: 'Retournez le produit', desc: 'Emballez soigneusement le produit avec tous ses accessoires et sa facture' },
     { icon: '🔍', title: 'Inspection', desc: 'Notre équipe vérifie le produit dans les 48h après réception' },
     { icon: '💰', title: 'Remboursement', desc: 'Remboursement sous 5-7 jours ouvrés sur votre moyen de paiement' },
@@ -86,7 +86,7 @@ export default function RetoursPage() {
 
         <div className="rt-hero">
           <h1>Retours & Remboursements</h1>
-          <p>✓ Satisfait ou remboursé sous 30 jours</p>
+          <p>✓ Retours acceptés sous 15 jours</p>
         </div>
 
         {/* Steps */}
