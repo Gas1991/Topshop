@@ -30,10 +30,10 @@ export default function Header({ categories = [] }: HeaderProps) {
         <div className="inner">
           <div className="left">
             <span className="pill">TOPSHOP TN</span>
-            <span>Livraison express 🇹🇳 partout en Tunisie</span>
+            <span>Livraison 🇹🇳 partout en Tunisie</span>
           </div>
           <div className="right">
-            <a href="#">Aide &amp; Service Client</a>
+            <a href="/contact">Aide &amp; Service Client</a>
             <span className="dot" />
             <a href="/account">Mon compte</a>
             <span className="dot" />
@@ -50,9 +50,10 @@ export default function Header({ categories = [] }: HeaderProps) {
             </Link>
           </div>
 
-          <form className="search-wrap" onSubmit={handleSearch}>
+          <form className="search-wrap" role="search" action="/shop" onSubmit={handleSearch}>
             <select
               className="cat"
+              aria-label="Catégorie"
               value={selectedCat}
               onChange={e => setSelectedCat(e.target.value)}
               style={{ border: 0, outline: 0, background: '#fafafa', cursor: 'pointer', appearance: 'auto', fontFamily: 'inherit', fontSize: 13, color: 'var(--ink-2)', paddingRight: 8 }}
@@ -63,24 +64,29 @@ export default function Header({ categories = [] }: HeaderProps) {
               ))}
             </select>
             <input
-              placeholder="Rechercher des produits, marques et plus encore…"
+              type="search"
+              name="s"
+              enterKeyHint="search"
+              autoComplete="off"
+              aria-label="Rechercher un produit"
+              placeholder="Rechercher un produit…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <button type="submit" className="go">
-              <I.search s={14} /> Rechercher
+            <button type="submit" className="go" aria-label="Rechercher">
+              <I.search s={16} /> <span className="go-label">Rechercher</span>
             </button>
           </form>
 
           <div className="header-actions">
-            <Link className="h-btn" href="/account">
+            <Link className="h-btn" href="/account" aria-label="Mon compte">
               <I.user s={20} />
               <div className="stack">
                 <span className="top">{user ? `Bonjour, ${user.firstName}` : 'Bonjour'}</span>
                 <span className="bot">{user ? 'Mon espace' : 'Mon compte'}</span>
               </div>
             </Link>
-            <Link className="h-btn cart-btn" href="/cart">
+            <Link className="h-btn cart-btn" href="/cart" aria-label={`Panier (${cartCount})`}>
               <div style={{ position: 'relative', display: 'flex' }}>
                 <I.cart s={22} />
                 {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}

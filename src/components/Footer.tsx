@@ -9,15 +9,11 @@ export default function Footer() {
           <div className="brand-block">
             <div className="logo">topshop<span className="dot">.</span></div>
             <p style={{ marginTop: 14 }}>
-              Le marketplace tech en Tunisie. Smartphones, laptops, audio, gaming,
-              maison — livrés chez vous.
+              Votre boutique en ligne en Tunisie : maison, cuisine, mode, électronique
+              et plus, livrés chez vous.
             </p>
             <div className="pay-row">
-              <span className="pay">VISA</span>
-              <span className="pay">MASTERCARD</span>
-              <span className="pay">D17</span>
-              <span className="pay">POSTE TN</span>
-              <span className="pay" style={{ background: '#FFB800' }}>CASH</span>
+              <span className="pay" style={{ background: '#FFB800' }}>💵 Paiement à la livraison</span>
             </div>
           </div>
           <div>

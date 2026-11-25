@@ -2,13 +2,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { I, CatIcon } from './icons';
+import { I } from './icons';
 // @ts-ignore
 import ProductArt from './product-art.jsx';
 import type { WCProduct, WCCategory } from '@/lib/woocommerce';
 import { getDiscount, getBrand, getProductImage } from '@/lib/woocommerce';
 import SpotlightDeals from './SpotlightDeals';
-import PromoBanners from './PromoBanners';
 import CategoryRail from './CategoryRail';
 import { useCart } from '@/lib/cart';
 
@@ -26,7 +25,6 @@ interface Product {
   old: number;
   disc: number;
   express: boolean;
-  freeShip: boolean;
   badge: string;
   img: string | null;
   link: string;
@@ -35,6 +33,7 @@ interface Product {
 interface HomePageProps {
   newProducts: WCProduct[];
   deals: WCProduct[];
+  selection: WCProduct[];
   categories: WCCategory[];
 }
 
@@ -57,7 +56,7 @@ function mapProduct(p: WCProduct): Product {
     rating: parseFloat(p.average_rating) || 0,
     reviews: p.rating_count || 0,
     price, old: regular, disc,
-    express: false, freeShip: true,
+    express: false,
     badge: disc >= 30 ? 'PROMO' : disc >= 20 ? 'BON PLAN' : '',
     img, link: `/produit/${p.slug}`,
   };
@@ -80,32 +79,19 @@ function Stars({ value }: { value: number }) {
 }
 
 /* ── Category bar ─────────────────────────────────────────────── */
-const CAT_ICONS: Record<string, React.ReactNode> = {
-  phone: CatIcon.phone, laptop: CatIcon.laptop, audio: CatIcon.audio,
-  gaming: CatIcon.gaming, tv: CatIcon.tv, home: CatIcon.home,
-};
-const CAT_SUBS: Record<string, string> = {
-  phone: 'iPhone, Samsung', laptop: 'MacBook, Asus', audio: 'Casques, AirPods',
-  gaming: 'PS5, Xbox, PC', tv: 'QLED, OLED 4K', home: 'Électroménager',
-};
-
-function CategoryBar({ cats, active, setActive }: {
-  cats: WCCategory[]; active: string; setActive: (k: string) => void;
-}) {
+function CategoryBar({ cats }: { cats: WCCategory[] }) {
   return (
     <section className="cat-bar">
       <div className="inner">
         {cats.map((c) => (
-          <Link key={c.slug} href={`/categorie/${decodeURIComponent(c.slug)}`}
-            className={'cat-tile' + (active === c.slug ? ' active' : '')}
-            onClick={() => setActive(c.slug)}>
+          <Link key={c.slug} href={`/categorie/${decodeURIComponent(c.slug)}`} className="cat-tile">
             <span className="cat-circle">
               {c.image?.src
-                ? <Image src={c.image.src} alt={c.name} width={36} height={36} style={{ objectFit: 'contain' }} />
-                : (CAT_ICONS[c.slug] || CatIcon.home)}
+                ? <Image src={c.image.src} alt="" width={36} height={36} style={{ objectFit: 'contain' }} />
+                : <span aria-hidden="true" style={{ fontSize: 28 }}>{c.icon}</span>}
             </span>
             <span className="lbl">{c.name}</span>
-            <span className="sub">{CAT_SUBS[c.slug] || `${c.count} produits`}</span>
+            <span className="sub">{c.count} produits</span>
           </Link>
         ))}
       </div>
@@ -118,79 +104,41 @@ function PromoStrip() {
   return (
     <div className="promo-strip">
       <div className="inner">
-        <span><I.truck s={14} /> Livraison <strong>gratuite</strong> dès 99 TND</span>
-        <span><I.shield s={14} /> Paiement <strong>à la livraison</strong> disponible</span>
-        <span><I.ret s={14} /> Retour <strong>15 jours</strong> sans condition</span>
-        <span><I.bolt s={14} /> <strong>Express 2h</strong> Grand Tunis</span>
+        <span><I.shield s={14} /> Paiement <strong>à la livraison</strong></span>
+        <span><I.truck s={14} /> Livraison <strong>partout en Tunisie</strong> en 48 à 72 h</span>
+        <span><I.ret s={14} /> <Link href="/retours">Retours <strong>possibles</strong></Link></span>
       </div>
     </div>
   );
 }
 
 /* ── Hero ─────────────────────────────────────────────────────── */
-function Hero({ featured }: { featured: Product | null }) {
+function Hero({ categories }: { categories: WCCategory[] }) {
   return (
     <>
       <section className="hero">
         <div className="pattern" />
         <div className="left">
-          <span className="eyebrow">Marketplace Électroménager — Tunisie</span>
-          <h1>Meilleures<br /><span className="hl">Offres</span> du Marché.</h1>
-          <p>Les meilleurs prix sur réfrigérateurs, friteuses, lave-vaisselle, climatiseurs et plus. Livraison rapide partout en Tunisie.</p>
-          <div className="meta">
-            <div className="m"><span className="k">Jusqu'à</span><span className="v">50<span>%</span></span></div>
-            <div className="m"><span className="k">Produits</span><span className="v">+44 000</span></div>
-          </div>
+          <span className="eyebrow">Boutique en ligne — Tunisie</span>
+          <h1>Tout pour la maison,<br /><span className="hl">au meilleur prix</span>.</h1>
+          <p>Maison, cuisine, mode, électronique et plus. Vous commandez en ligne et vous payez à la livraison.</p>
           <div className="actions">
             <Link className="btn-yellow" href="/shop">Voir les produits <I.chevR s={14} /></Link>
-            <Link className="btn-ghost" href="/shop?on_sale=1">Bons plans</Link>
           </div>
-        </div>
-        <div className="right">
-          <div className="stage">
-            {featured?.img
-              ? <img className="laptop" src={featured.img} alt={featured.title} style={{ objectFit: 'contain' }} />
-              : <div className="laptop">{ProductArt.laptop}</div>}
-          </div>
-        </div>
-        <div className="price-burst">
-          <span className="top">DÈS</span>
-          <span className="big">75</span>
-          <span className="sub">TND</span>
         </div>
       </section>
 
       <div className="side-banners">
-        <div className="side-card a">
-          <div className="text">
-            <div className="sm">Xiaomi Days</div>
-            <div className="lg">Air Fryer dès<br />379 TND</div>
-            <div className="cta">Découvrir <I.chevR s={12} /></div>
-          </div>
-          <div className="ic" style={{ width: 100, height: 100, flexShrink: 0 }}>
-            <img src="https://spacenet.tn/245605-large_default/air-fryer-xiaomi-55031-smart-55l-1600w-blanc.jpg" alt="Xiaomi Air Fryer" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-        </div>
-        <div className="side-card b">
-          <div className="text">
-            <div className="sm">Promo Cuisson</div>
-            <div className="lg">Friteuses jusqu'à -40%</div>
-            <div className="cta">Voir <I.chevR s={12} /></div>
-          </div>
-          <div className="ic" style={{ width: 100, height: 100, flexShrink: 0 }}>
-            <img src="https://spacenet.tn/59737-large_default/-friteuse-gold-master-1200w-silver-gm-419.jpg" alt="Friteuse" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-        </div>
-        <div className="side-card c">
-          <div className="text">
-            <div className="sm">Réfrigération</div>
-            <div className="lg">Frigos NoFrost — Promo</div>
-            <div className="cta">Acheter <I.chevR s={12} /></div>
-          </div>
-          <div className="ic" style={{ width: 100, height: 100, flexShrink: 0 }}>
-            <img src="https://spacenet.tn/242428-large_default/refrigerateur-telefunken-frig-543n-524l-nofrost-noir.jpg" alt="Réfrigérateur" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          </div>
-        </div>
+        {categories.slice(0, 3).map((c, i) => (
+          <Link key={c.slug} href={`/categorie/${decodeURIComponent(c.slug)}`} className={`side-card ${'abc'[i]}`}>
+            <div className="text">
+              <div className="sm">{c.count} produits</div>
+              <div className="lg">{c.name}</div>
+              <div className="cta">Découvrir <I.chevR s={12} /></div>
+            </div>
+            <div className="ic" aria-hidden="true" style={{ fontSize: 56 }}>{c.icon}</div>
+          </Link>
+        ))}
       </div>
     </>
   );
@@ -214,7 +162,7 @@ function ProductCard({ p, qty, onAdd, onInc, onDec, onWish, wished }: {
   return (
     <article className="product-card">
       {p.disc >= 5 && <span className="corner-tag">-{p.disc}%</span>}
-      <button className={'wish' + (wished ? ' on' : '')} onClick={() => onWish(p.id)}>
+      <button className={'wish' + (wished ? ' on' : '')} onClick={() => onWish(p.id)} aria-label="Ajouter aux favoris" aria-pressed={wished}>
         <I.heart fill={wished ? 'currentColor' : 'none'} />
       </button>
       <a href={p.link} className="img-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -235,7 +183,7 @@ function ProductCard({ p, qty, onAdd, onInc, onDec, onWish, wished }: {
           </div>
         )}
         <div className="price-row">
-          <span className="price"><span className="cur">TND </span>{price.int}<span className="frac">.{price.frac}</span></span>
+          <span className="price">{price.int}.{price.frac}<span className="cur"> TND</span></span>
         </div>
         {p.disc >= 2 && (
           <div className="price-row" style={{ marginTop: -4 }}>
@@ -243,7 +191,6 @@ function ProductCard({ p, qty, onAdd, onInc, onDec, onWish, wished }: {
             <span className="disc">{p.disc}% off</span>
           </div>
         )}
-        {p.freeShip && <div className="ship"><I.truck s={12} /> Livraison gratuite</div>}
         {qty > 0 ? (
           <button className="add added">
             <span className="qty">
@@ -262,39 +209,13 @@ function ProductCard({ p, qty, onAdd, onInc, onDec, onWish, wished }: {
   );
 }
 
-/* ── Countdown ────────────────────────────────────────────────── */
-function Countdown() {
-  const [t, setT] = useState({ h: 5, m: 42, s: 18 });
-  useEffect(() => {
-    const id = setInterval(() => {
-      setT((p) => {
-        let s = p.s - 1, m = p.m, h = p.h;
-        if (s < 0) { s = 59; m--; }
-        if (m < 0) { m = 59; h--; }
-        if (h < 0) return { h: 9, m: 59, s: 59 };
-        return { h, m, s };
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, []);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return (
-    <div className="countdown">
-      <span className="lbl">Se termine dans</span>
-      <span className="cell">{pad(t.h)}</span><span className="sep">:</span>
-      <span className="cell">{pad(t.m)}</span><span className="sep">:</span>
-      <span className="cell">{pad(t.s)}</span>
-    </div>
-  );
-}
-
 /* ── HomePage ─────────────────────────────────────────────────── */
-export default function HomePage({ newProducts, deals, categories }: HomePageProps) {
+export default function HomePage({ newProducts, deals, selection, categories }: HomePageProps) {
   const nouveautes = useMemo(() => newProducts.map(mapProduct), [newProducts]);
   const bonsPlans  = useMemo(() => deals.map(mapProduct), [deals]);
 
   const spotlightData = useMemo(() => {
-    const prods = [...newProducts, ...deals].map(p => ({
+    const prods = selection.map(p => ({
       id: p.id,
       name: p.name,
       slug: p.slug,
@@ -310,10 +231,9 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
     prods.forEach(p => p.categories.forEach((c: { slug: string; name: string }) => catMap.set(c.slug, c.name)));
     const tabs = [...catMap.entries()].slice(0, 6).map(([slug, label]) => ({ slug, label }));
     return { prods, tabs };
-  }, [newProducts, deals]);
+  }, [selection]);
 
   const { addItem, removeItem, updateQty, items: cartItems } = useCart();
-  const [activeCat, setActiveCat] = useState(categories[0]?.slug || 'phone');
   const [wishlist,  setWishlist]  = useState<Record<string, boolean>>({});
   const [toast,     setToast]     = useState<string | null>(null);
 
@@ -345,10 +265,10 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
 
   return (
     <>
-      <CategoryBar cats={categories} active={activeCat} setActive={setActiveCat} />
+      <CategoryBar cats={categories} />
       <PromoStrip />
       <main className="page">
-        <Hero featured={nouveautes[0] || null} />
+        <Hero categories={categories} />
 
         {/* Nouveautés */}
         {nouveautes.length > 0 && (
@@ -356,7 +276,7 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
             <div className="section-head">
               <div>
                 <h2><span className="accent" />Nouveautés</h2>
-                <div className="sub">Les dernières sorties tech — sélectionnées pour vous</div>
+                <div className="sub">Les derniers produits ajoutés</div>
               </div>
               <div className="right">
                 <Link className="see-all" href="/shop?orderby=date">Voir tout <I.chevR s={12} /></Link>
@@ -380,10 +300,9 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
                 <h2><span className="accent" style={{ background: '#E2231A' }} />
                   Bons Plans <span style={{ color: '#E2231A', fontSize: 14, marginLeft: 6 }}>🔥</span>
                 </h2>
-                <div className="sub">De -20% à -50% — pendant que les stocks durent</div>
+                <div className="sub">Les produits en promotion en ce moment</div>
               </div>
               <div className="right">
-                <Countdown />
                 <Link className="see-all" href="/shop?on_sale=1">Voir tout <I.chevR s={12} /></Link>
               </div>
             </div>
@@ -410,48 +329,12 @@ export default function HomePage({ newProducts, deals, categories }: HomePagePro
             <SpotlightDeals
               products={spotlightData.prods}
               tabs={spotlightData.tabs}
-              title="Meilleures Offres"
+              title="Notre sélection"
               currency="TND"
             />
           </div>
         )}
 
-        {/* Promo Banners — real deals */}
-        {deals.length > 0 && (
-          <div style={{ padding: '8px 0 32px' }}>
-            <PromoBanners
-              heading="Offres exclusives"
-              banners={deals.slice(0, 3).map((p, i) => {
-                const bgs = [
-                  'linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%)',
-                  'linear-gradient(135deg, #0b3b8c 0%, #1a56c4 100%)',
-                  'linear-gradient(135deg, #4a0e8f 0%, #7b2ff7 100%)',
-                ];
-                const disc = getDiscount(p);
-                const img = getProductImage(p);
-                return {
-                  title: p.name,
-                  eyebrow: p.categories[0]?.name || 'Promo',
-                  discount: disc > 0 ? `${disc}%` : undefined,
-                  code: p.sku || p.slug.slice(0, 10).toUpperCase(),
-                  image: img,
-                  bg: bgs[i % bgs.length],
-                  cta: 'Voir le produit',
-                  link: `/produit/${p.slug}`,
-                };
-              })}
-            />
-          </div>
-        )}
-
-        {/* Brand strip */}
-        <div className="brand-strip">
-          <h3>Marques officielles</h3>
-          <div className="logos">
-            {['Apple', 'SAMSUNG', 'Sony', 'HUAWEI', 'XIAOMI', 'JBL', 'DELL', 'ASUS', 'LG', 'HP']
-              .map((b) => <span key={b}>{b}</span>)}
-          </div>
-        </div>
       </main>
 
       {toast && (

@@ -47,7 +47,7 @@ const DEFAULT_TABS = [
 function formatPrice(raw: string, currency = "TND") {
   const n = Number(raw);
   if (Number.isNaN(n)) return raw;
-  return `${currency}${n.toLocaleString("fr-FR")}`;
+  return `${n.toFixed(3)} ${currency}`;
 }
 
 function discount(price: string, regular: string) {
@@ -150,9 +150,11 @@ const ProductCard: React.FC<{ p: WCProduct; currency: string }> = ({ p, currency
         </div>
 
         {/* Rating */}
-        <div className="mt-2">
-          <Stars value={p.rating ?? 4.5} count={p.rating_count} />
-        </div>
+        {(p.rating_count ?? 0) > 0 && (
+          <div className="mt-2">
+            <Stars value={p.rating ?? 0} count={p.rating_count} />
+          </div>
+        )}
       </a>
     </article>
   );
@@ -233,13 +235,13 @@ const SpotlightDeals: React.FC<SpotlightDealsProps> = ({
           {title}
         </h2>
         <p className="mt-2 text-[14px] text-neutral-600">
-          Sélection du jour · livraison gratuite dès 99 TND
+          Paiement à la livraison partout en Tunisie
         </p>
       </div>
 
       {/* Tabs */}
       <div className="relative mt-7 flex justify-center">
-        <div className="relative inline-flex items-center gap-1 p-1.5 rounded-full bg-white/70 backdrop-blur ring-1 ring-black/5 shadow-[0_4px_18px_-8px_rgba(20,30,60,0.18)]">
+        <div className="relative inline-flex max-w-full overflow-x-auto whitespace-nowrap [scrollbar-width:none] items-center gap-1 p-1.5 rounded-full bg-white/70 backdrop-blur ring-1 ring-black/5 shadow-[0_4px_18px_-8px_rgba(20,30,60,0.18)]">
           {/* sliding pill */}
           <span
             className="absolute top-1.5 bottom-1.5 rounded-full bg-[#FFB800] shadow-[0_4px_14px_rgba(255,184,0,0.55)] transition-all duration-500 ease-[cubic-bezier(.6,.2,.1,1)]"
@@ -253,7 +255,7 @@ const SpotlightDeals: React.FC<SpotlightDealsProps> = ({
                 ref={(el) => { tabRefs.current[t.slug] = el; }}
                 onClick={() => setActive(t.slug)}
                 className={
-                  "relative z-[1] px-4 sm:px-5 h-9 rounded-full text-[13px] font-semibold tracking-tight transition-colors duration-300 " +
+                  "relative z-[1] shrink-0 px-4 sm:px-5 h-11 rounded-full text-[13px] font-semibold tracking-tight transition-colors duration-300 " +
                   (isActive ? "text-neutral-900" : "text-neutral-500 hover:text-neutral-800")
                 }
               >

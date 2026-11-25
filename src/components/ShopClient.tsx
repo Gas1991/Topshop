@@ -7,7 +7,7 @@ import { getProductImage, getDiscount, getBrand } from '@/lib/woocommerce';
 import { useCart } from '@/lib/cart';
 
 /* ── Product Card ──────────────────────────────────────────────── */
-function ProductCard({ p }: { p: WCProduct }) {
+function ProductCard({ p, eager }: { p: WCProduct; eager: boolean }) {
   const { addItem } = useCart();
   const [wished, setWished] = useState(false);
   const [added, setAdded] = useState(false);
@@ -37,7 +37,7 @@ function ProductCard({ p }: { p: WCProduct }) {
           {wished ? '❤' : '♡'}
         </button>
         {img
-          ? <img src={img} alt={p.name} />
+          ? <img src={img} alt={p.name} loading={eager ? 'eager' : 'lazy'} />
           : <span className="sc-no-img">📦</span>}
       </div>
       <div className="sc-card-info">
@@ -115,7 +115,7 @@ function Pagination({ currentPage, totalPages, baseUrl }: { currentPage: number;
 function pgStyle(active: boolean, _: boolean): React.CSSProperties {
   return {
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-    minWidth: 38, height: 38, padding: '0 10px',
+    minWidth: 44, height: 44, padding: '0 10px',
     borderRadius: 8, textDecoration: 'none', fontSize: 14, fontWeight: active ? 900 : 600,
     background: active ? '#FFB800' : '#fff',
     color: active ? '#111' : '#555',
@@ -253,6 +253,7 @@ export default function ShopClient({ products, categories, title, total, current
       </div>
 
       {/* Rating */}
+      {products.some(p => p.rating_count > 0) && (
       <div className="sc-fsec">
         <div className="sc-fsec-title">Note minimale</div>
         <div className="sc-ratings">
@@ -267,6 +268,7 @@ export default function ShopClient({ products, categories, title, total, current
           ))}
         </div>
       </div>
+      )}
 
       {/* Brands */}
       {brands.length > 0 && (
@@ -305,7 +307,7 @@ export default function ShopClient({ products, categories, title, total, current
   return (
     <>
       <style>{`
-        .sc-wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px 48px; }
+        .sc-wrap { max-width: 1280px; margin: 0 auto; padding: 0 16px 48px; min-height: 100vh; }
 
         /* Breadcrumb */
         .sc-breadcrumb { padding: 14px 0 8px; font-size: 12px; color: #888; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -426,7 +428,12 @@ export default function ShopClient({ products, categories, title, total, current
         }
         @media (max-width: 640px) {
           .sc-wrap { padding: 0 12px 40px; }
-          .sc-breadcrumb { padding: 8px 0 4px; font-size: 11px; }
+          .sc-breadcrumb { padding: 4px 0 0; font-size: 12px; }
+          .sc-breadcrumb a { padding: 6px 0; }
+          .sc-cat-btn { min-height: 44px; font-size: 14px; }
+          .sc-drawer-close button { width: 44px; height: 44px; }
+          .sc-check-row, .sc-toggle-row { min-height: 40px; }
+          .sc-price-input { height: 44px; font-size: 16px; }
           .sc-title-row { margin-bottom: 10px; gap: 6px; }
           .sc-h1 { font-size: 17px; }
           .sc-count { font-size: 12px; }
@@ -439,8 +446,8 @@ export default function ShopClient({ products, categories, title, total, current
             border-bottom: 1px solid #ececec;
           }
           .sc-sort-label { display: none; }
-          .sc-filter-btn { flex: 1; justify-content: center; padding: 8px 10px; font-size: 12px; }
-          .sc-sort-select { flex: 1; font-size: 12px; padding: 8px 8px; }
+          .sc-filter-btn { flex: 1; justify-content: center; min-height: 44px; padding: 8px 10px; font-size: 13px; }
+          .sc-sort-select { flex: 1; min-height: 44px; font-size: 13px; padding: 8px 8px; }
 
           /* Grid */
           .sc-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -450,20 +457,18 @@ export default function ShopClient({ products, categories, title, total, current
           .sc-card-img { aspect-ratio: 1; }
           .sc-card-img img { padding: 8px; }
           .sc-card-info { padding: 8px; }
-          .sc-brand { font-size: 10px; margin-bottom: 2px; }
+          .sc-brand { font-size: 12px; margin-bottom: 2px; }
           .sc-name { font-size: 12px; min-height: 32px; margin-bottom: 4px; }
           .sc-rating { margin-bottom: 4px; }
-          .sc-stars { font-size: 11px; }
+          .sc-stars { font-size: 12px; }
+          .sc-wish { width: 40px; height: 40px; top: 6px; right: 6px; }
+          .sc-cur, .sc-old, .sc-badge { font-size: 12px; }
           .sc-price-row { margin-bottom: 8px; gap: 4px; }
-          .sc-price { font-size: 14px; }
-          .sc-old { font-size: 11px; }
-          .sc-add { height: 32px; font-size: 12px; border-radius: 7px; }
+          .sc-price { font-size: 15px; }
+          .sc-add { height: 44px; font-size: 12px; border-radius: 8px; padding: 0 4px; }
 
           /* Drawer */
           .sc-drawer { width: 85vw; }
-        }
-        @media (max-width: 360px) {
-          .sc-grid { grid-template-columns: 1fr; }
         }
       `}</style>
 
@@ -475,7 +480,7 @@ export default function ShopClient({ products, categories, title, total, current
       <div className={`sc-drawer${drawerOpen ? ' open' : ''}`}>
         <div className="sc-drawer-close">
           <span>Filtres</span>
-          <button onClick={() => setDrawerOpen(false)}>✕</button>
+          <button onClick={() => setDrawerOpen(false)} aria-label="Fermer les filtres">✕</button>
         </div>
         {FilterSidebar}
       </div>
@@ -512,6 +517,7 @@ export default function ShopClient({ products, categories, title, total, current
                   ⚙ Filtres {hasActiveFilters && `(${[priceMin || priceMax ? 1 : 0, onlyInStock ? 1 : 0, onlyOnSale ? 1 : 0, minRating > 0 ? 1 : 0, selectedBrands.length > 0 ? 1 : 0].reduce((a, b) => a + b, 0)})`}
                 </button>
                 <select
+                  aria-label="Trier les produits"
                   className="sc-sort-select"
                   value={sortBy}
                   onChange={e => setSortBy(e.target.value as SortKey)}
@@ -542,7 +548,7 @@ export default function ShopClient({ products, categories, title, total, current
               </div>
             ) : (
               <div className="sc-grid">
-                {filteredProducts.map(p => <ProductCard key={p.id} p={p} />)}
+                {filteredProducts.map((p, i) => <ProductCard key={p.id} p={p} eager={i < 4} />)}
               </div>
             )}
 

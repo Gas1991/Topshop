@@ -1,15 +1,9 @@
 export default function AProposPage() {
-  const stats = [
-    { icon: '📦', num: '44 000+', label: 'Produits' },
-    { icon: '😊', num: '10 000+', label: 'Clients satisfaits' },
-    { icon: '🚚', num: '48h', label: 'Livraison moyenne' },
-    { icon: '⭐', num: '4.8/5', label: 'Satisfaction client' },
-  ];
 
   const values = [
     { icon: '🤝', title: 'Confiance', desc: 'Produits 100% authentiques, sélectionnés avec soin pour vous garantir qualité et fiabilité.' },
     { icon: '💰', title: 'Meilleur prix', desc: 'Nous sélectionnons les meilleures offres pour vous proposer les prix les plus compétitifs du marché tunisien.' },
-    { icon: '🚀', title: 'Rapidité', desc: 'Livraison express partout en Tunisie sous 48h, avec suivi en temps réel.' },
+    { icon: '🚀', title: 'Rapidité', desc: 'Livraison partout en Tunisie en 48 à 72 h.' },
   ];
 
   return (
@@ -74,35 +68,20 @@ export default function AProposPage() {
         <div className="ap-hero">
           <div className="ap-hero-inner">
             <h1>Notre histoire</h1>
-            <p>Votre marketplace tunisienne de confiance depuis 2023</p>
+            <p>Votre boutique en ligne tunisienne</p>
           </div>
-        </div>
-
-        <div className="ap-stats">
-          {stats.map((s, i) => (
-            <div key={i} className="ap-stat">
-              <div className="icon">{s.icon}</div>
-              <div className="num">{s.num}</div>
-              <div className="label">{s.label}</div>
-            </div>
-          ))}
         </div>
 
         <div className="ap-story">
           <div className="ap-story-text">
             <h2>Qui sommes-nous ?</h2>
             <p>
-              shop.toprix.tn est né d&apos;une idée simple : vous offrir un accès rapide aux meilleurs
-              produits tech et électroménager en Tunisie, réunis en un seul endroit.
+              shop.toprix.tn est né d&apos;une idée simple : vous permettre de commander en ligne des
+              produits pour la maison, la cuisine, la mode et l&apos;électronique, réunis en un seul endroit.
             </p>
             <p>
-              Notre mission : vous offrir le meilleur prix, la meilleure qualité, et la meilleure expérience
-              d&apos;achat en Tunisie. Nous sélectionnons rigoureusement chaque produit pour vous
-              garantir authenticité et livraison rapide.
-            </p>
-            <p>
-              Depuis notre lancement en 2023, nous avons servi des milliers de clients satisfaits à travers
-              tout le territoire tunisien, et nous continuons à grandir chaque jour.
+              Vous commandez sur le site, notre équipe vous contacte pour confirmer, et vous payez à la
+              réception de votre colis.
             </p>
           </div>
           <div className="ap-story-img">🏪</div>

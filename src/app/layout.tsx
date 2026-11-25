@@ -8,10 +8,13 @@ import MessengerButton from '@/components/MessengerButton';
 import { api } from '@/lib/woocommerce';
 import { CartProvider } from '@/lib/cart';
 import { AuthProvider } from '@/lib/auth';
+import { SITE_URL } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Toprix — Meilleurs prix électroménager en Tunisie',
-  description: 'Marketplace électroménager n°1 en Tunisie. Meilleurs prix sur réfrigérateurs, friteuses, lave-vaisselle et plus.',
+  metadataBase: new URL(SITE_URL),
+  title: 'Toprix — Boutique en ligne en Tunisie',
+  description: 'Maison, cuisine, mode, électronique et plus : commandez en ligne, livraison partout en Tunisie et paiement à la livraison.',
+  openGraph: { siteName: 'Topshop.tn', locale: 'fr_TN', type: 'website' },
   verification: {
     other: {
       'facebook-domain-verification': '49fmoj954lfdcr8pelq6cgsszapr6m',
@@ -47,7 +50,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           fbq('track', 'PageView');
         `}</Script>
         {/* Microsoft Clarity */}
-        <Script id="clarity-init" strategy="afterInteractive">{`
+        <Script id="clarity-init" strategy="lazyOnload">{`
           (function(c,l,a,r,i,t,y){
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;

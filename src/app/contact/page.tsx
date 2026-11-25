@@ -18,7 +18,7 @@ export default function ContactPage() {
     },
     {
       q: 'Quel est le délai de livraison ?',
-      a: 'La livraison standard prend 3-5 jours ouvrés sur tout le territoire tunisien. La livraison express est disponible pour le Grand Tunis avec une livraison le lendemain avant 18h.',
+      a: 'La livraison coûte 10.000 TND partout en Tunisie. Le délai dépend de votre gouvernorat (voir la page Livraison). Vous payez à la réception.',
     },
     {
       q: 'Comment retourner un produit ?',

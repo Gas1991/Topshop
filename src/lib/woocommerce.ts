@@ -3,19 +3,21 @@
  * Docs: https://woocommerce.github.io/woocommerce-rest-api-docs/
  */
 
+import { categorieFr, CATEGORIES_EN_DERNIER } from './categories';
+
 const WC_URL    = process.env.NEXT_PUBLIC_WC_URL    || 'https://shop.toprix.tn';
 const WC_KEY    = process.env.WC_CONSUMER_KEY        || '';
 const WC_SECRET = process.env.WC_CONSUMER_SECRET     || '';
 
-async function wcFetch<T>(endpoint: string, params: Record<string, string | number> = {}): Promise<T> {
+async function wcFetch<T>(endpoint: string, params: Record<string, string | number> = {}, revalidate = 60): Promise<T> {
   const url = new URL(`${WC_URL}/wp-json/wc/v3/${endpoint}`);
   url.searchParams.set('consumer_key', WC_KEY);
   url.searchParams.set('consumer_secret', WC_SECRET);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
 
-  const res = await fetch(url.toString(), { next: { revalidate: 60 } });
+  const res = await fetch(url.toString(), { next: { revalidate } });
   if (!res.ok) throw new Error(`WC API error: ${res.status} ${endpoint}`);
-  return res.json();
+  return franciser(await res.json());
 }
 
 export interface PagedResult<T> {
@@ -35,7 +37,7 @@ async function wcFetchPaged<T>(endpoint: string, params: Record<string, string |
 
   const total      = parseInt(res.headers.get('X-WP-Total')      || '0', 10);
   const totalPages = parseInt(res.headers.get('X-WP-TotalPages') || '1', 10);
-  const data       = await res.json() as T;
+  const data       = franciser(await res.json() as T);
   return { data, total, totalPages };
 }
 
@@ -74,6 +76,21 @@ export interface WCCategory {
   count: number;
   image: WCImage | null;
   parent: number;
+  icon?: string;
+}
+
+/** Remplace les noms de categories (arabe) par leur nom francais, dans les produits comme dans les categories. */
+function franciser<T>(data: T): T {
+  if (!Array.isArray(data)) return data;
+  return data.map(item => {
+    if (item && Array.isArray(item.categories)) {
+      return { ...item, categories: item.categories.map((c: { name: string }) => ({ ...c, name: categorieFr(c.name).name })) };
+    }
+    if (item && typeof item.count === 'number' && 'parent' in item) {
+      return { ...item, ...categorieFr(item.name) };
+    }
+    return item;
+  }) as T;
 }
 
 /* ── Helpers ────────────────────────────────────────────────────── */
@@ -113,7 +130,8 @@ export const api = {
       wcFetch<WCProduct[]>('products', { search: query, per_page: limit, status: 'publish' }),
 
     bySlug: async (slug: string) => {
-      const products = await wcFetch<WCProduct[]>('products', { slug });
+      // status=publish : un produit masque (brouillon, ex. rupture Shipper) ne doit pas etre accessible par son URL
+      const products = await wcFetch<WCProduct[]>('products', { slug, status: 'publish' });
       return products[0] || null;
     },
 
@@ -132,12 +150,22 @@ export const api = {
   },
 
   categories: {
-    top: (limit = 10) =>
-      wcFetch<WCCategory[]>('products/categories', {
-        hide_empty: 1, per_page: limit, orderby: 'count', order: 'desc',
-      }),
+    /** Les plus grandes categories ; les fourre-tout passent a la fin, les doublons et "Non classe" sont ecartes. */
+    top: async (limit = 10) => {
+      const cats = await wcFetch<WCCategory[]>('products/categories', {
+        hide_empty: 1, per_page: Math.min(100, limit + 10), orderby: 'count', order: 'desc',
+      }, 3600);
+      const vues = new Set<string>();
+      const propres = cats.filter(c => {
+        if (c.slug === 'non-classe' || c.slug === 'uncategorized' || vues.has(c.name)) return false;
+        vues.add(c.name);
+        return c.count > 0;
+      });
+      const rang = (c: WCCategory) => (CATEGORIES_EN_DERNIER.includes(c.name) ? 1 : 0);
+      return propres.sort((a, b) => rang(a) - rang(b)).slice(0, limit);
+    },
     bySlug: (slug: string) =>
-      wcFetch<WCCategory[]>('products/categories', { slug, per_page: 1 })
+      wcFetch<WCCategory[]>('products/categories', { slug, per_page: 1 }, 3600)
         .then(cats => cats[0] ?? null),
   },
 };

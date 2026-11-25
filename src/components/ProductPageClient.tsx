@@ -5,6 +5,7 @@ import type { WCProduct } from '@/lib/woocommerce';
 import { getProductImage } from '@/lib/woocommerce';
 import { useCart } from '@/lib/cart';
 import { trackViewContent, trackAddToCart } from '@/lib/metaPixel';
+import { MESSENGER_URL } from '@/lib/messenger';
 
 function Stars({ value }: { value: number }) {
   const full = Math.floor(value);
@@ -17,11 +18,10 @@ function Stars({ value }: { value: number }) {
   );
 }
 
-export default function ProductPageClient({ product }: { product: WCProduct }) {
+export default function ProductPageClient({ product, similar = [] }: { product: WCProduct; similar?: WCProduct[] }) {
   const { addItem } = useCart();
   const [qty, setQty] = useState(1);
   const [wished, setWished] = useState(false);
-  const [activeTab, setActiveTab] = useState<'desc' | 'spec' | 'avis'>('desc');
   const [added, setAdded] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
 
@@ -57,12 +57,6 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
     if (product.sku) trackAddToCart({ sku: product.sku, name: product.name, price, quantity: qty });
   }
 
-  const tabs: { id: 'desc' | 'spec' | 'avis'; label: string }[] = [
-    { id: 'desc', label: 'Description' },
-    { id: 'spec', label: 'Fiche technique' },
-    { id: 'avis', label: `Avis (${product.rating_count || 0})` },
-  ];
-
   return (
     <>
       <style>{`
@@ -73,7 +67,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
         .pp-breadcrumb .sep { color: #ccc; }
         .pp-breadcrumb .cur { color: #111; font-weight: 600; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .pp-main { display: grid; grid-template-columns: 55% 45%; gap: 28px; background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.07); }
+        .pp-main { display: grid; grid-template-columns: minmax(0, 55fr) minmax(0, 45fr); gap: 28px; background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.07); }
 
         /* Gallery */
         .pp-gallery { display: flex; flex-direction: column; gap: 12px; }
@@ -81,7 +75,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
         .pp-main-img img { transition: transform .3s; }
         .pp-main-img:hover img { transform: scale(1.05); }
         .pp-disc-badge { position: absolute; top: 14px; left: 14px; background: #E2231A; color: #fff; font-weight: 800; font-size: 12px; padding: 5px 10px; border-radius: 6px; z-index: 2; }
-        .pp-wish-btn { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; background: #fff; border: 1px solid #ececec; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: all .15s; box-shadow: 0 2px 6px rgba(0,0,0,.08); z-index: 2; }
+        .pp-wish-btn { position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; background: #fff; border: 1px solid #ececec; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; transition: all .15s; box-shadow: 0 2px 6px rgba(0,0,0,.08); z-index: 2; }
         .pp-wish-btn:hover { transform: scale(1.08); }
         .pp-wish-btn.on { color: #dc2626; border-color: #dc2626; background: #fee2e2; }
         .pp-thumbs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
@@ -135,10 +129,10 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
         .pp-qty-wrap { display: flex; flex-direction: column; gap: 5px; }
         .pp-qty-label { font-size: 12px; font-weight: 600; color: #555; }
         .pp-qty { display: inline-flex; align-items: center; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
-        .pp-qty-btn { background: #fff; border: 0; width: 38px; height: 40px; font-size: 18px; font-weight: 700; color: #111; cursor: pointer; transition: background .12s; display: flex; align-items: center; justify-content: center; }
+        .pp-qty-btn { background: #fff; border: 0; width: 46px; height: 44px; font-size: 18px; font-weight: 700; color: #111; cursor: pointer; transition: background .12s; display: flex; align-items: center; justify-content: center; }
         .pp-qty-btn:hover { background: #FFF5D6; }
         .pp-qty-btn:disabled { color: #ccc; cursor: not-allowed; }
-        .pp-qty-num { width: 44px; text-align: center; font-size: 15px; font-weight: 700; border-left: 1px solid #eee; border-right: 1px solid #eee; height: 40px; display: flex; align-items: center; justify-content: center; }
+        .pp-qty-num { width: 44px; text-align: center; font-size: 15px; font-weight: 700; border-left: 1px solid #eee; border-right: 1px solid #eee; height: 44px; display: flex; align-items: center; justify-content: center; }
 
         /* Buttons */
         .pp-actions { display: flex; flex-direction: column; gap: 10px; }
@@ -159,7 +153,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
 
         /* Trust badges */
         .pp-trust-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .pp-trust-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: #F8F9FA; border-radius: 10px; padding: 12px 8px; font-size: 11px; font-weight: 600; color: #555; text-align: center; }
+        .pp-trust-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: #F8F9FA; border-radius: 10px; padding: 12px 8px; font-size: 12px; font-weight: 600; color: #555; text-align: center; }
         .pp-trust-item span { display: flex; gap: 3px; align-items: center; font-size: 18px; }
 
         /* Tabs */
@@ -179,6 +173,20 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
         .pp-spec-table td:first-child { font-weight: 600; color: #555; width: 160px; }
         .pp-avis-empty { text-align: center; padding: 40px 20px; color: #888; }
 
+        .pp-question { display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid #cfe5ff; border-radius: 10px; background: #f2f8ff; color: #0063c6; font-size: 13px; font-weight: 700; text-decoration: none; }
+        a.pp-trust-item { text-decoration: none; }
+        .pp-desc-title { font-size: 17px; font-weight: 800; margin: 0; padding: 18px 24px 0; }
+
+        /* Similaires */
+        .pp-similar { margin-top: 24px; }
+        .pp-similar h2 { font-size: 18px; font-weight: 800; margin: 0 0 12px; }
+        .pp-similar-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+        .pp-sim-card { display: flex; flex-direction: column; gap: 6px; background: #fff; border: 1px solid #ececec; border-radius: 12px; padding: 8px; color: #111; text-decoration: none; min-width: 0; }
+        .pp-sim-img { aspect-ratio: 1; background: #F8F9FA; border-radius: 8px; overflow: hidden; }
+        .pp-sim-img img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+        .pp-sim-name { font-size: 12px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 32px; }
+        .pp-sim-price { font-size: 14px; font-weight: 900; }
+
         /* Mobile sticky bar */
         .pp-mobile-bar { display: none; }
 
@@ -187,7 +195,11 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
           .pp-main { grid-template-columns: 1fr; gap: 20px; }
         }
         @media (max-width: 768px) {
-          .pp-wrap { padding: 0 12px 100px; }
+          .pp-wrap { padding: 0 12px 24px; }
+          .pp-similar-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .pp-breadcrumb a { padding: 6px 0; }
+          .pp-desc-title { padding: 16px 16px 0; }
+          .pp-tab-content { padding: 16px; }
           .pp-main { padding: 16px; border-radius: 12px; }
           .pp-price-current { font-size: 26px; }
           .pp-title { font-size: 17px; }
@@ -240,7 +252,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
                 {wished ? '❤' : '♡'}
               </button>
               {displayImg
-                ? <Image src={displayImg} alt={product.name} fill sizes="(max-width: 900px) 100vw, 55vw" style={{ objectFit: 'contain', padding: 20, mixBlendMode: 'multiply' }} />
+                ? <Image src={displayImg} alt={product.name} fill sizes="(max-width: 900px) 100vw, 55vw" loading="eager" fetchPriority="high" style={{ objectFit: 'contain', padding: 20, mixBlendMode: 'multiply' }} />
                 : <span style={{ fontSize: 80 }}>📦</span>}
             </div>
             {images.length > 1 && (
@@ -250,6 +262,7 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
                     key={i}
                     className={`pp-thumb${activeImg === i ? ' active' : ''}`}
                     onClick={() => setActiveImg(i)}
+                    aria-label={`Voir la photo ${i + 1}`}
                   >
                     <Image src={img.src} alt={product.name} width={48} height={48} style={{ objectFit: 'contain', mixBlendMode: 'multiply' }} />
                   </button>
@@ -263,13 +276,13 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
             {brand && <span className="pp-brand">● {brand}</span>}
             <h1 className="pp-title">{product.name}</h1>
 
-            <div className="pp-rating-row">
-              <Stars value={rating} />
-              {rating > 0 && <span className="pp-rating-num">{rating.toFixed(1)}</span>}
-              <span className="pp-rating-link">({product.rating_count || 0} avis)</span>
-            </div>
-
-            {product.sku && <div className="pp-sku">Réf: <strong>{product.sku}</strong></div>}
+            {product.rating_count > 0 && (
+              <div className="pp-rating-row">
+                <Stars value={rating} />
+                <span className="pp-rating-num">{rating.toFixed(1)}</span>
+                <span>({product.rating_count} avis)</span>
+              </div>
+            )}
 
             {/* Price block */}
             <div className="pp-price-block">
@@ -290,10 +303,9 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
                 <div className="pp-dlv-ico">📦</div>
                 <div className="pp-dlv-label">
                   Livraison standard
-                  <small>48–72h — Partout en Tunisie</small>
+                  <small>48–72h partout en Tunisie · Paiement à la livraison</small>
                 </div>
                 <div className="pp-dlv-price">10.000 TND</div>
-                <div className="pp-dlv-radio" />
               </div>
             </div>
 
@@ -306,9 +318,9 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
             <div className="pp-qty-wrap">
               <div className="pp-qty-label">Quantité</div>
               <div className="pp-qty">
-                <button className="pp-qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))} disabled={qty <= 1}>−</button>
+                <button className="pp-qty-btn" aria-label="Diminuer la quantité" onClick={() => setQty(q => Math.max(1, q - 1))} disabled={qty <= 1}>−</button>
                 <div className="pp-qty-num">{qty}</div>
-                <button className="pp-qty-btn" onClick={() => setQty(q => Math.min(99, q + 1))}>+</button>
+                <button className="pp-qty-btn" aria-label="Augmenter la quantité" onClick={() => setQty(q => Math.min(99, q + 1))}>+</button>
               </div>
             </div>
 
@@ -325,90 +337,46 @@ export default function ProductPageClient({ product }: { product: WCProduct }) {
               </button>
             </div>
 
-            {/* Seller */}
-            <div className="pp-seller">
-              <div className="pp-seller-avatar">T</div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700 }}>
-                  Vendu par <strong>Toprix Official</strong>{' '}
-                  <span style={{ color: '#16a34a' }}>✓</span>
-                </div>
-                <div style={{ fontSize: 12, color: '#888' }}>★★★★★ 98% avis positifs</div>
-              </div>
-            </div>
-
             {/* Trust badges */}
             <div className="pp-trust-row">
-              <div className="pp-trust-item"><span>🔒</span>Paiement sécurisé</div>
-              <div className="pp-trust-item"><span>🔄</span>Retour 30 jours</div>
-              <div className="pp-trust-item"><span>🚚</span>Livraison rapide</div>
+              <div className="pp-trust-item"><span>💵</span>Paiement à la livraison</div>
+              <a className="pp-trust-item" href="/retours"><span>🔄</span>Retours possibles</a>
+              <div className="pp-trust-item"><span>🚚</span>Livraison 48–72h</div>
             </div>
+
+            <a className="pp-question" href={MESSENGER_URL} target="_blank" rel="noopener noreferrer">
+              💬 Une question ? Écrivez-nous sur Messenger
+            </a>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="pp-tabs">
-          <div className="pp-tabs-nav">
-            {tabs.map(t => (
-              <button
-                key={t.id}
-                className={`pp-tab-btn${activeTab === t.id ? ' active' : ''}`}
-                onClick={() => setActiveTab(t.id)}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+        {/* Description */}
+        <section className="pp-tabs">
+          <h2 className="pp-desc-title">Description</h2>
           <div className="pp-tab-content">
-            {activeTab === 'desc' && (
-              product.description || product.short_description
-                ? <div dangerouslySetInnerHTML={{ __html: product.description || product.short_description }} />
-                : <p style={{ color: '#888' }}>Aucune description disponible.</p>
-            )}
-            {activeTab === 'spec' && (
-              <table className="pp-spec-table">
-                <tbody>
-                  {brand && <tr><td>Marque</td><td>{brand}</td></tr>}
-                  {product.categories.map(c => (
-                    <tr key={c.id}><td>Catégorie</td><td>{c.name}</td></tr>
-                  ))}
-                  {product.sku && <tr><td>Référence</td><td>{product.sku}</td></tr>}
-                  {product.meta_data
-                    ?.filter(m => !m.key.startsWith('_') && m.value && typeof m.value === 'string' && m.value.length < 200)
-                    .map(m => (
-                      <tr key={m.key}><td>{m.key.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())}</td><td>{m.value}</td></tr>
-                    ))
-                  }
-                  <tr>
-                    <td>Disponibilité</td>
-                    <td style={{ color: product.stock_status === 'instock' ? '#16a34a' : '#dc2626', fontWeight: 600 }}>
-                      {product.stock_status === 'instock' ? '✓ En stock' : 'Rupture de stock'}
-                    </td>
-                  </tr>
-                  <tr><td>Prix</td><td>{price.toFixed(3)} TND</td></tr>
-                </tbody>
-              </table>
-            )}
-            {activeTab === 'avis' && (
-              <div className="pp-avis-empty">
-                <div style={{ fontSize: 48 }}>⭐</div>
-                <div style={{ fontWeight: 700, fontSize: 16, marginTop: 12, color: '#111' }}>
-                  {product.rating_count > 0 ? `${product.rating_count} avis clients` : 'Aucun avis pour le moment'}
-                </div>
-                {product.permalink && (
-                  <a
-                    href={product.permalink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: '#FFB800', fontWeight: 700, fontSize: 14, marginTop: 12, display: 'inline-block' }}
-                  >
-                    Voir les avis sur le site officiel →
-                  </a>
-                )}
-              </div>
-            )}
+            {product.description || product.short_description
+              ? <div dangerouslySetInnerHTML={{ __html: product.description || product.short_description }} />
+              : <p style={{ color: '#888' }}>Aucune description disponible.</p>}
           </div>
-        </div>
+        </section>
+
+        {/* Produits similaires */}
+        {similar.length > 0 && (
+          <section className="pp-similar">
+            <h2>Produits similaires</h2>
+            <div className="pp-similar-grid">
+              {similar.map(p => (
+                <a key={p.id} href={`/produit/${p.slug}`} className="pp-sim-card">
+                  <div className="pp-sim-img">
+                    {getProductImage(p) && <img src={getProductImage(p)} alt={p.name} loading="lazy" />}
+                  </div>
+                  <div className="pp-sim-name">{p.name}</div>
+                  <div className="pp-sim-price">{(parseFloat(p.price) || 0).toFixed(3)} TND</div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Mobile sticky bar */}

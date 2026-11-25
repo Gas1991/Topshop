@@ -18,9 +18,11 @@ export default function robots(): MetadataRoute.Robots {
           '/suivi-commande',
           // Routes internes
           '/api/',
-          '/_next/',
-          // URLs avec paramètres de requête
-          '/*?*',
+          // Recherche, filtres et tris (la pagination ?page= reste explorable)
+          '/*?*s=',
+          '/*?*cat=',
+          '/*?*on_sale=',
+          '/*?*orderby=',
         ],
       },
     ],

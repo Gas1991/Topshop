@@ -7,7 +7,7 @@ export default function LivraisonPage() {
   const sections = [
     {
       title: 'Comment est calculée la livraison ?',
-      content: 'Les frais de livraison sont calculés en fonction du mode choisi : Livraison standard à 7.000 TND pour tout le pays, ou Livraison express à 12.000 TND pour le Grand Tunis. La livraison est GRATUITE pour toute commande supérieure à 99 TND avec la livraison standard.',
+      content: 'La livraison standard coûte 10.000 TND par commande, partout en Tunisie. Vous payez le produit et la livraison à la réception.',
     },
     {
       title: 'Zones de livraison',
@@ -15,7 +15,7 @@ export default function LivraisonPage() {
     },
     {
       title: 'Suivi de commande',
-      content: 'Après confirmation de votre commande, vous recevrez un SMS avec un numéro de suivi. Vous pouvez suivre votre colis en temps réel via votre espace client ou en contactant notre service client au +216 70 100 200.',
+      content: 'Après votre commande, notre équipe vous contacte pour la confirmer. Vous pouvez la suivre dans votre espace client ou en contactant notre service client au +216 70 100 200.',
     },
     {
       title: 'En cas de retard',
@@ -115,21 +115,9 @@ export default function LivraisonPage() {
             <tbody>
               <tr>
                 <td className="mode">Standard <span className="lv-badge">📦</span></td>
-                <td>3-5 jours ouvrés</td>
-                <td>7.000 TND</td>
+                <td>Voir les délais par gouvernorat</td>
+                <td>10.000 TND</td>
                 <td>Tout le pays</td>
-              </tr>
-              <tr>
-                <td className="mode">Express <span className="lv-badge express">⚡ Rapide</span></td>
-                <td>24-48h</td>
-                <td>12.000 TND</td>
-                <td>Grand Tunis</td>
-              </tr>
-              <tr>
-                <td className="mode">Gratuite <span className="lv-badge free">✓ Offerte</span></td>
-                <td>3-5 jours ouvrés</td>
-                <td className="free">GRATUIT</td>
-                <td>Commandes &gt; 99 TND</td>
               </tr>
             </tbody>
           </table>

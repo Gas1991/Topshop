@@ -3,6 +3,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useCart } from '@/lib/cart';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
+import { MESSENGER_URL } from '@/lib/messenger';
 import locationsRaw from '@/data/tunisia_locations.json';
 
 type LocationEntry = { delegation: string; localite: string; cp: string };
@@ -17,6 +18,7 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>(2);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [orderId, setOrderId] = useState('');
 
   /* Form state */
@@ -111,19 +113,25 @@ export default function CheckoutPage() {
 
   function validate() {
     const e: Record<string, string> = {};
-    if (!prenom.trim()) e.prenom = 'Requis';
-    if (!nom.trim()) e.nom = 'Requis';
-    if (!tel.trim()) e.tel = 'Requis';
-    if (!governorat) e.governorat = 'Requis';
-    if (!delegation) e.delegation = 'Requis';
-    if (!rue.trim()) e.rue = 'Requis';
+    if (!prenom.trim()) e.prenom = 'Entrez votre prénom';
+    if (!nom.trim()) e.nom = 'Entrez votre nom';
+    if (!/^\d{8}$/.test(tel.replace(/\D/g, ''))) e.tel = 'Entrez un numéro à 8 chiffres';
+    if (!governorat) e.governorat = 'Choisissez votre gouvernorat';
+    if (!delegation) e.delegation = 'Choisissez votre délégation';
+    if (!rue.trim()) e.rue = 'Entrez votre adresse';
     setErrors(e);
-    return Object.keys(e).length === 0;
+    const ok = Object.keys(e).length === 0;
+    if (!ok) {
+      setEditingAddress(true);
+      setTimeout(() => document.querySelector('.ck-wrap .err')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+    }
+    return ok;
   }
 
   async function handleSubmit() {
     if (!validate()) return;
     setLoading(true);
+    setSubmitError('');
 
     const newOrderId = `TP-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 89999)}`;
 
@@ -176,7 +184,14 @@ export default function CheckoutPage() {
         const data = await res.json();
         wcOrderId = data.id;
       }
-    } catch { /* WC indisponible — commande sauvegardée localement quand même */ }
+    } catch { /* traite ci-dessous : pas d'identifiant = commande non enregistree */ }
+
+    // Sans identifiant WooCommerce la commande n'existe pas : on ne l'annonce pas comme confirmee.
+    if (!wcOrderId) {
+      setLoading(false);
+      setSubmitError('Votre commande n’a pas pu être envoyée. Votre panier est conservé : réessayez ou écrivez-nous sur Messenger.');
+      return;
+    }
 
     saveOrder({
       id: newOrderId,
@@ -254,8 +269,8 @@ export default function CheckoutPage() {
             <strong>#{orderId}</strong>
           </div>
           <div className="ck-s-info">
-            Vous recevrez un SMS de confirmation au <strong>+216 {tel || 'XX XXX XXX'}</strong>.<br />
-            Notre équipe vous contactera dans les <strong>24h</strong> pour confirmer la livraison.
+            Notre équipe vous contactera au <strong>+216 {tel}</strong> pour confirmer la livraison.<br />
+            Vous payez à la réception de votre colis.
           </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="/account" className="ck-s-btn">Suivre ma commande →</a>
@@ -307,10 +322,8 @@ export default function CheckoutPage() {
         </div>
       </div>
       <div className="ck-badges">
-        <div className="ck-badge-item">🔒 SSL</div>
-        <div className="ck-badge-item">🔄 Retour 30j</div>
-        <div className="ck-badge-item">📦 Livraison</div>
-        <div className="ck-badge-item">☎ 7j/7</div>
+        <div className="ck-badge-item">💵 Paiement à la livraison</div>
+        <Link className="ck-badge-item" href="/retours">🔄 Retours possibles</Link>
       </div>
     </div>
   );
@@ -320,6 +333,10 @@ export default function CheckoutPage() {
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
         .ck-wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px 60px; }
+
+        .ck-h1 { font-size: 20px; font-weight: 900; margin: 16px 0 0; }
+        .ck-question { display: flex; align-items: center; justify-content: center; min-height: 44px; margin-top: 12px; border-radius: 8px; background: #f2f8ff; color: #0063c6; font-size: 13px; font-weight: 700; text-decoration: none; }
+        .ck-submit-err { background: #fee2e2; color: #991b1b; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
 
         /* Progress */
         .ck-progress { padding: 24px 0 20px; }
@@ -350,7 +367,7 @@ export default function CheckoutPage() {
         .ck-input:focus { border-color: #FFB800; }
         .ck-input.err { border-color: #dc2626; background: #fff5f5; }
         .ck-input:read-only { background: #F8F9FA; color: #666; cursor: default; }
-        .ck-err-msg { font-size: 11px; color: #dc2626; font-weight: 600; }
+        .ck-err-msg { font-size: 12px; color: #dc2626; font-weight: 600; }
         .ck-tel-wrap { display: flex; }
         .ck-tel-prefix { border: 1px solid #ddd; border-right: 0; border-radius: 8px 0 0 8px; padding: 10px 12px; font-size: 14px; background: #F8F9FA; color: #555; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
         .ck-tel-input { flex: 1; border: 1px solid #ddd; border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; }
@@ -378,7 +395,7 @@ export default function CheckoutPage() {
 
         /* Promo */
         .ck-promo { display: flex; gap: 10px; margin-top: 16px; }
-        .ck-promo-input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; }
+        .ck-promo-input { flex: 1; min-width: 0; border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; }
         .ck-promo-input:focus { border-color: #FFB800; }
         .ck-promo-btn { background: #111; color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
         .ck-promo-btn:hover { background: #000; }
@@ -409,7 +426,7 @@ export default function CheckoutPage() {
         .ck-total-row.green { color: #16a34a; font-weight: 700; }
         .ck-total-row.total { font-size: 16px; font-weight: 900; color: #111; padding-top: 10px; border-top: 1px solid #ececec; margin-top: 4px; }
         .ck-badges { padding: 12px 18px; display: flex; justify-content: space-around; }
-        .ck-badge-item { font-size: 11px; color: #888; font-weight: 600; text-align: center; }
+        .ck-badge-item { font-size: 12px; color: #888; font-weight: 600; text-align: center; }
 
         /* Mobile summary toggle */
         .ck-mobile-summary { display: none; background: #FFFCEF; border-bottom: 1px solid #FFE08A; padding: 12px 16px; cursor: pointer; font-size: 14px; font-weight: 700; color: #111; align-items: center; justify-content: space-between; margin-bottom: 16px; border-radius: 12px; }
@@ -420,20 +437,27 @@ export default function CheckoutPage() {
 
         /* Responsive */
         @media (max-width: 900px) {
-          .ck-layout { grid-template-columns: 1fr; }
+          .ck-layout { grid-template-columns: minmax(0, 1fr); }
+          .ck-layout > *, .ck-field { min-width: 0; }
+          .ck-tel-input { min-width: 0; }
           .ck-summary { position: static; }
           .ck-steps .ck-step-label { display: none; }
         }
         @media (max-width: 640px) {
           .ck-wrap { padding: 0 12px 80px; }
-          .ck-row2 { grid-template-columns: 1fr; }
+          .ck-row2 { grid-template-columns: minmax(0, 1fr); }
           .ck-mobile-summary { display: flex; }
           .ck-mobile-cta { display: block; position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 14px; background: #fff; border-top: 1px solid #ececec; box-shadow: 0 -4px 12px rgba(0,0,0,.08); z-index: 50; }
           .ck-cta { display: none; }
+          .ck-input, .ck-select, .ck-textarea, .ck-tel-input, .ck-promo-input { font-size: 16px; min-height: 46px; }
+          .ck-wrap { padding-bottom: 24px; }
+          .ck-wrap > .ck-layout .ck-submit-err { display: none; }
         }
       `}</style>
 
       <div className="ck-wrap">
+        <h1 className="ck-h1">Finaliser ma commande</h1>
+
         {/* Progress bar */}
         <div className="ck-progress">
           <div className="ck-steps">
@@ -513,20 +537,22 @@ export default function CheckoutPage() {
                   </div>
                   <div className="ck-row2">
                     <div className="ck-field">
-                      <label className="ck-label">Prénom *</label>
+                      <label className="ck-label" htmlFor="ck-prenom">Prénom *</label>
                       <input
                         className={`ck-input${errors.prenom ? ' err' : ''}`}
                         placeholder="Ex: Ahmed"
+                        id="ck-prenom" name="given-name" autoComplete="given-name"
                         value={prenom}
                         onChange={e => { setPrenom(e.target.value); setErrors(x => ({ ...x, prenom: '' })); }}
                       />
                       {errors.prenom && <span className="ck-err-msg">{errors.prenom}</span>}
                     </div>
                     <div className="ck-field">
-                      <label className="ck-label">Nom *</label>
+                      <label className="ck-label" htmlFor="ck-nom">Nom *</label>
                       <input
                         className={`ck-input${errors.nom ? ' err' : ''}`}
                         placeholder="Ex: Ben Ali"
+                        id="ck-nom" name="family-name" autoComplete="family-name"
                         value={nom}
                         onChange={e => { setNom(e.target.value); setErrors(x => ({ ...x, nom: '' })); }}
                       />
@@ -534,25 +560,30 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <div className="ck-field">
-                    <label className="ck-label">Téléphone *</label>
+                    <label className="ck-label" htmlFor="ck-tel">Téléphone *</label>
                     <div className="ck-tel-wrap">
                       <div className="ck-tel-prefix">🇹🇳 +216</div>
                       <input
                         className={`ck-tel-input${errors.tel ? ' err' : ''}`}
+                        id="ck-tel" name="tel" type="tel" inputMode="numeric" autoComplete="tel-national"
                         placeholder="XX XXX XXX"
                         value={tel}
-                        onChange={e => { setTel(e.target.value); setErrors(x => ({ ...x, tel: '' })); }}
-                        maxLength={9}
+                        onChange={e => {
+                          let v = e.target.value.replace(/\D/g, '');
+                          if (v.length > 8 && v.startsWith('216')) v = v.slice(3);
+                          setTel(v.slice(0, 8)); setErrors(x => ({ ...x, tel: '' }));
+                        }}
                       />
                     </div>
                     {errors.tel && <span className="ck-err-msg">{errors.tel}</span>}
                   </div>
                   <div className="ck-field" style={{ marginBottom: 0 }}>
-                    <label className="ck-label">Email</label>
+                    <label className="ck-label" htmlFor="ck-email">Email</label>
                     <input
                       className="ck-input"
                       type="email"
                       placeholder="votre@email.tn"
+                      id="ck-email" name="email" autoComplete="email" inputMode="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                     />
@@ -567,9 +598,10 @@ export default function CheckoutPage() {
 
                   <div className="ck-row2">
                     <div className="ck-field">
-                      <label className="ck-label">Gouvernorat *</label>
+                      <label className="ck-label" htmlFor="ck-gouvernorat">Gouvernorat *</label>
                       <select
                         className={`ck-select${errors.governorat ? ' err' : ''}`}
+                        id="ck-gouvernorat" name="governorat"
                         value={governorat}
                         onChange={e => handleGovernoratChange(e.target.value)}
                       >
@@ -581,9 +613,10 @@ export default function CheckoutPage() {
                       {errors.governorat && <span className="ck-err-msg">{errors.governorat}</span>}
                     </div>
                     <div className="ck-field">
-                      <label className="ck-label">Délégation *</label>
+                      <label className="ck-label" htmlFor="ck-delegation">Délégation *</label>
                       <select
                         className={`ck-select${errors.delegation ? ' err' : ''}`}
+                        id="ck-delegation" name="delegation"
                         value={delegation}
                         onChange={e => handleDelegationChange(e.target.value)}
                         disabled={!governorat}
@@ -599,9 +632,10 @@ export default function CheckoutPage() {
 
                   <div className="ck-row2">
                     <div className="ck-field">
-                      <label className="ck-label">Localité</label>
+                      <label className="ck-label" htmlFor="ck-localite">Localité</label>
                       <select
                         className="ck-select"
+                        id="ck-localite" name="localite"
                         value={localite}
                         onChange={e => handleLocaliteChange(e.target.value)}
                         disabled={!delegation}
@@ -612,22 +646,20 @@ export default function CheckoutPage() {
                         ))}
                       </select>
                     </div>
-                    <div className="ck-field">
-                      <label className="ck-label">Code postal</label>
-                      <input
-                        className="ck-input"
-                        value={codePostal}
-                        readOnly
-                        placeholder="—"
-                      />
-                    </div>
+                    {codePostal && (
+                      <div className="ck-field">
+                        <label className="ck-label" htmlFor="ck-cp">Code postal</label>
+                        <input id="ck-cp" className="ck-input" value={codePostal} readOnly />
+                      </div>
+                    )}
                   </div>
 
                   <div className="ck-field">
-                    <label className="ck-label">Rue / Adresse *</label>
+                    <label className="ck-label" htmlFor="ck-rue">Rue / Adresse *</label>
                     <input
                       className={`ck-input${errors.rue ? ' err' : ''}`}
                       placeholder="Ex: 12 Rue de la République, Appt 3"
+                      id="ck-rue" name="street-address" autoComplete="street-address"
                       value={rue}
                       onChange={e => { setRue(e.target.value); setErrors(x => ({ ...x, rue: '' })); }}
                     />
@@ -678,6 +710,10 @@ export default function CheckoutPage() {
                 <span className="ck-cod-badge">Recommandé</span>
               </div>
 
+              <a className="ck-question" href={MESSENGER_URL} target="_blank" rel="noopener noreferrer">
+                💬 Une question avant de commander ? Écrivez-nous
+              </a>
+
               {/* Code promo */}
               <div className="ck-promo">
                 <input
@@ -695,6 +731,8 @@ export default function CheckoutPage() {
               )}
             </div>
 
+            {submitError && <div className="ck-submit-err" role="alert">{submitError}</div>}
+
             {/* CTA */}
             <div className="ck-cta">
               <button
@@ -709,7 +747,7 @@ export default function CheckoutPage() {
                   </>
                 ) : 'Confirmer la commande →'}
               </button>
-              <div className="ck-secure">🔒 Paiement 100% sécurisé — Données chiffrées SSL</div>
+              <div className="ck-secure">💵 Vous payez à la livraison, aucun paiement en ligne</div>
             </div>
           </div>
 
@@ -720,6 +758,7 @@ export default function CheckoutPage() {
 
       {/* Mobile fixed CTA */}
       <div className="ck-mobile-cta">
+        {submitError && <div className="ck-submit-err" role="alert">{submitError}</div>}
         <button
           className="ck-cta-btn"
           onClick={handleSubmit}

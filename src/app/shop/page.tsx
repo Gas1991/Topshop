@@ -4,7 +4,22 @@ import { Suspense } from 'react';
 
 export const dynamic = 'force-dynamic';
 
-const BAD = ['non-clause', 'other-categories', 'uncategorized', 'autre'];
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ s?: string; cat?: string; on_sale?: string; page?: string }>;
+}) {
+  const params = await searchParams;
+  const page = Math.max(1, parseInt(params.page || '1', 10));
+  const filtre = !!(params.s || params.cat || params.on_sale);
+  const titre = params.s ? `Recherche « ${params.s} »` : params.on_sale ? 'Offres et promotions' : 'Tous les produits';
+  return {
+    title: `${titre}${page > 1 ? ` — page ${page}` : ''} — Topshop.tn`,
+    description: 'Tous nos produits pour la maison, la cuisine, la mode et l’électronique, livrés partout en Tunisie. Paiement à la livraison.',
+    alternates: filtre ? undefined : { canonical: page > 1 ? `/shop?page=${page}` : '/shop' },
+    robots: filtre ? { index: false, follow: true } : undefined,
+  };
+}
 
 export default async function ShopPage({
   searchParams,
@@ -19,10 +34,6 @@ export default async function ShopPage({
     api.categories.top(20).catch(() => []),
     params.cat ? api.categories.bySlug(params.cat).catch(() => null) : Promise.resolve(null),
   ]);
-
-  const cleanCategories = categories.filter(c =>
-    !BAD.some(b => c.slug.startsWith(b)) && !c.name.includes('|') && c.count > 0
-  );
 
   // Fetch products (paginées — 24/page via X-WP-Total headers)
   const { data: products, total, totalPages } = await (
@@ -52,7 +63,7 @@ export default async function ShopPage({
     <Suspense>
       <ShopClient
         products={products}
-        categories={cleanCategories}
+        categories={categories}
         title={title}
         total={total}
         currentPage={currentPage}

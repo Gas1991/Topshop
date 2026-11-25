@@ -104,7 +104,7 @@ function CategoryTile({ c }: { c: WCCategory }) {
               className="absolute inset-0 w-full h-full object-contain p-4 sm:p-5 mix-blend-multiply"
               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           : <div className="absolute inset-0 flex items-center justify-center text-5xl">
-              {icon || label.slice(0, 1)}
+              {icon || c.icon || label.slice(0, 1)}
             </div>
         }
       </div>

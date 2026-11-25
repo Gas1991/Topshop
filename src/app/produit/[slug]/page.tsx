@@ -1,6 +1,8 @@
 import { api, getProductImage, getBrand } from '@/lib/woocommerce';
 import { notFound } from 'next/navigation';
 import ProductPageClient from '@/components/ProductPageClient';
+import JsonLd from '@/components/JsonLd';
+import { SITE_URL, stripHtml, breadcrumbLd } from '@/lib/seo';
 
 export const revalidate = 60;
 
@@ -9,11 +11,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const product = await api.products.bySlug(slug).catch(() => null);
   if (!product) return {};
   const image = getProductImage(product);
-  const canonical = `https://shop.toprix.tn/produit/${slug}`;
+  const canonical = `${SITE_URL}/produit/${slug}`;
   return {
     title: `${product.name} — Toprix.tn`,
-    description: product.short_description?.replace(/<[^>]*>/g, '').slice(0, 160)
-      || `Achetez ${product.name} au meilleur prix en Tunisie. Livraison rapide partout en Tunisie.`,
+    description: stripHtml(product.short_description || product.description, 160)
+      || `Achetez ${product.name} en Tunisie. Paiement à la livraison.`,
     alternates: { canonical },
     openGraph: {
       title: product.name,
@@ -29,62 +31,34 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const product = await api.products.bySlug(slug).catch(() => null);
   if (!product) notFound();
 
+  const category = product.categories[0];
+  const similar = category
+    ? (await api.products.byCategory(category.id, 7).catch(() => []))
+        .filter(p => p.id !== product.id)
+        .slice(0, 6)
+    : [];
+
   const image = getProductImage(product);
   const price = parseFloat(product.price) || 0;
   const regular = parseFloat(product.regular_price) || price;
   const brand = getBrand(product);
   const rating = parseFloat(product.average_rating) || 0;
 
-  const canonical = `https://shop.toprix.tn/produit/${product.slug}`;
-  const stockText = product.stock_status === 'instock' ? 'Oui, ce produit est actuellement en stock et disponible à la livraison partout en Tunisie.' : 'Ce produit est temporairement en rupture de stock. Revenez bientôt pour vérifier sa disponibilité.';
-
-  const faqLd = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: `Quel est le prix de ${product.name} en Tunisie ?`,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: regular > price
-            ? `Le ${product.name} est disponible à ${price.toFixed(3)} TND au lieu de ${regular.toFixed(3)} TND, soit une réduction de ${Math.round((regular - price) / regular * 100)}%. Livraison disponible partout en Tunisie.`
-            : `Le ${product.name} est disponible à ${price.toFixed(3)} TND sur Toprix.tn avec livraison partout en Tunisie.`,
-        },
-      },
-      {
-        '@type': 'Question',
-        name: `Est-ce que ${product.name} est disponible en stock ?`,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: stockText,
-        },
-      },
-      {
-        '@type': 'Question',
-        name: `Quelles sont les conditions de livraison pour ${product.name} ?`,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: `Le ${product.name} est livré sous 48 à 72h partout en Tunisie. Paiement à la livraison (COD) disponible. Retour gratuit sous 30 jours si le produit ne vous convient pas.`,
-        },
-      },
-    ],
-  };
+  const canonical = `${SITE_URL}/produit/${product.slug}`;
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
     ...(image ? { image: [image] } : {}),
-    description: product.short_description?.replace(/<[^>]*>/g, '').slice(0, 500)
-      || `${product.name} — Toprix.tn`,
+    description: stripHtml(product.description || product.short_description) || product.name,
     ...(product.sku ? { sku: product.sku } : {}),
     ...(brand ? { brand: { '@type': 'Brand', name: brand } } : {}),
     offers: {
       '@type': 'Offer',
       url: canonical,
       priceCurrency: 'TND',
-      price: price.toFixed(2),
+      price: price.toFixed(3),
       ...(regular > price ? { priceValidUntil: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0] } : {}),
       availability: product.stock_status === 'instock'
         ? 'https://schema.org/InStock'
@@ -100,25 +74,18 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     } : {}),
   };
 
+  const fil = breadcrumbLd([
+    { name: 'Accueil', path: '/' },
+    { name: 'Boutique', path: '/shop' },
+    ...(category ? [{ name: category.name, path: `/categorie/${category.slug}` }] : []),
+    { name: product.name, path: `/produit/${product.slug}` },
+  ]);
+
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: toJsonLdScript(jsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: toJsonLdScript(faqLd) }}
-      />
-      <ProductPageClient product={product} />
+      <JsonLd data={jsonLd} />
+      <JsonLd data={fil} />
+      <ProductPageClient product={product} similar={similar} />
     </>
   );
-}
-
-/** JSON.stringify pour injection dans un <script> : echappe '<' pour qu'un nom
- * ou une description contenant "</script>" ne puisse jamais casser le tag et
- * injecter du HTML/JS (XSS). < reste un JSON valide identique une fois
- * reparse. */
-function toJsonLdScript(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, '\\u003c');
 }

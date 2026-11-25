@@ -39,11 +39,11 @@ export default function CartPage() {
         .cart-item-price { font-size: 15px; font-weight: 900; color: #111; }
         .cart-item-unit { font-size: 12px; color: #888; margin-top: 2px; }
         .cart-qty { display: inline-flex; align-items: center; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; margin-top: 8px; }
-        .cart-qty-btn { background: #fff; border: 0; width: 34px; height: 34px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .1s; }
+        .cart-qty-btn { background: #fff; border: 0; width: 44px; height: 44px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .1s; }
         .cart-qty-btn:hover { background: #FFF5D6; }
         .cart-qty-btn:disabled { color: #ccc; cursor: not-allowed; }
-        .cart-qty-num { width: 40px; text-align: center; font-size: 14px; font-weight: 700; border-left: 1px solid #eee; border-right: 1px solid #eee; height: 34px; display: flex; align-items: center; justify-content: center; }
-        .cart-remove { background: transparent; border: 0; color: #bbb; font-size: 18px; cursor: pointer; padding: 4px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: color .1s; align-self: flex-start; }
+        .cart-qty-num { width: 40px; text-align: center; font-size: 14px; font-weight: 700; border-left: 1px solid #eee; border-right: 1px solid #eee; height: 44px; display: flex; align-items: center; justify-content: center; }
+        .cart-remove { background: transparent; border: 0; color: #777; font-size: 18px; cursor: pointer; width: 44px; height: 44px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: color .1s; align-self: flex-start; }
         .cart-remove:hover { color: #dc2626; }
 
         .cart-summary { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.07); position: sticky; top: 16px; padding: 20px; }
@@ -52,10 +52,10 @@ export default function CartPage() {
         .cart-summary-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 900; color: #111; padding-top: 14px; border-top: 2px solid #ececec; margin-top: 4px; }
         .cart-checkout-btn { display: block; width: 100%; margin-top: 16px; background: #FFB800; color: #111; font-weight: 800; font-size: 15px; padding: 14px; border-radius: 10px; text-align: center; text-decoration: none; box-shadow: 0 4px 0 #F2A900; transition: background .1s; }
         .cart-checkout-btn:hover { background: #F2A900; }
-        .cart-continue { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: #888; text-decoration: none; }
+        .cart-continue { display: block; text-align: center; margin-top: 12px; padding: 12px 0; font-size: 13px; color: #888; text-decoration: none; }
         .cart-continue:hover { color: #111; }
         .cart-badges { display: flex; justify-content: space-around; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f3f3f3; }
-        .cart-badge { font-size: 11px; color: #888; font-weight: 600; text-align: center; }
+        .cart-trust { font-size: 12px; color: #888; font-weight: 600; text-align: center; }
 
         @media (max-width: 768px) {
           .cart-layout { grid-template-columns: 1fr; }
@@ -116,9 +116,8 @@ export default function CartPage() {
               ← Continuer mes achats
             </Link>
             <div className="cart-badges">
-              <div className="cart-badge">🔒 SSL</div>
-              <div className="cart-badge">🔄 Retour 30j</div>
-              <div className="cart-badge">📦 Livraison</div>
+              <div className="cart-trust">💵 Paiement à la livraison</div>
+              <Link className="cart-trust" href="/retours">🔄 Retours possibles</Link>
             </div>
           </div>
         </div>

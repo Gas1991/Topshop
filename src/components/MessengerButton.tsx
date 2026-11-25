@@ -1,37 +1,26 @@
+'use client';
 /**
  * Bouton flottant "Discuter sur Messenger". Simple lien vers m.me, sans SDK
  * Facebook (le widget Customer Chat integre a ete retire : xfbml.customerchat.js
  * renvoyait une erreur 500 cote serveurs Meta en continu).
+ * Sur mobile : icone seule, et rien sur les pages d'achat (il couvrait les boutons).
  */
-const MESSENGER_URL = 'https://m.me/1299621413240558';
+import { usePathname } from 'next/navigation';
+import { MESSENGER_URL } from '@/lib/messenger';
 
 export default function MessengerButton() {
+  const path = usePathname() || '';
+  const pageAchat = ['/produit', '/cart', '/checkout'].some(p => path.startsWith(p));
+
   return (
     <a
       href={MESSENGER_URL}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Discuter avec nous sur Messenger"
-      style={{
-        position: 'fixed',
-        bottom: 20,
-        right: 20,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        background: '#0084FF',
-        color: '#fff',
-        padding: '12px 18px',
-        borderRadius: 999,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-        textDecoration: 'none',
-        fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-        fontWeight: 600,
-        fontSize: 14,
-      }}
+      className={`msgr${pageAchat ? ' msgr-achat' : ''}`}
     >
-      <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path
           d="M18 0C8.06 0 0 7.44 0 16.62c0 5.23 2.63 9.9 6.74 12.95V36l6.16-3.38c1.64.45 3.38.7 5.1.7 9.94 0 18-7.44 18-16.62S27.94 0 18 0Z"
           fill="#fff"
@@ -45,7 +34,7 @@ export default function MessengerButton() {
           fill="#fff"
         />
       </svg>
-      Discuter sur Messenger
+      <span>Discuter sur Messenger</span>
     </a>
   );
 }
