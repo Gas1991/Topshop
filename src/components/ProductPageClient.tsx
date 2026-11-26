@@ -53,7 +53,7 @@ export default function ProductPageClient({ product, similar = [] }: { product: 
   }
 
   function handleBuyNow() {
-    addItem(itemData, qty);
+    addItem(itemData, qty, { silent: true });
     if (product.sku) trackAddToCart({ sku: product.sku, name: product.name, price, quantity: qty });
   }
 

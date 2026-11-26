@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { StoredOrder } from '@/lib/auth';
 
@@ -38,6 +38,15 @@ export default function SuiviCommandePage() {
   const [order, setOrder] = useState<StoredOrder | null>(null);
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
+
+  // Arrivee depuis la confirmation de commande : /suivi-commande?commande=TP-...
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('commande')?.toUpperCase();
+    if (!q) return;
+    setInput(q);
+    const found = getOrders().find(o => o.id.toUpperCase() === q);
+    if (found) { setOrder(found); setSearched(true); }
+  }, []);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();

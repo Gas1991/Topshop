@@ -235,9 +235,6 @@ export default function HomePage({ newProducts, deals, selection, categories }: 
 
   const { addItem, removeItem, updateQty, items: cartItems } = useCart();
   const [wishlist,  setWishlist]  = useState<Record<string, boolean>>({});
-  const [toast,     setToast]     = useState<string | null>(null);
-
-  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 1800); };
 
   const getQty = (wcId: number) => cartItems.find(i => i.id === wcId)?.qty ?? 0;
 
@@ -245,7 +242,6 @@ export default function HomePage({ newProducts, deals, selection, categories }: 
     const p = [...nouveautes, ...bonsPlans].find((x) => x.id === id);
     if (!p) return;
     addItem({ id: p.wcId, slug: p.slug, name: p.title, price: p.price, img: p.img || '' });
-    showToast(`Ajouté: ${p.title.slice(0, 36)}…`);
   };
   const onInc = (id: string) => {
     const p = [...nouveautes, ...bonsPlans].find((x) => x.id === id);
@@ -337,11 +333,6 @@ export default function HomePage({ newProducts, deals, selection, categories }: 
 
       </main>
 
-      {toast && (
-        <div className="toast">
-          <span className="ic"><I.check s={12} /></span> {toast}
-        </div>
-      )}
     </>
   );
 }

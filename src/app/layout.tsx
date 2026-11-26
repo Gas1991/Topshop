@@ -5,6 +5,7 @@ import './topshop.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MessengerButton from '@/components/MessengerButton';
+import CartNotice from '@/components/CartNotice';
 import { api } from '@/lib/woocommerce';
 import { CartProvider } from '@/lib/cart';
 import { AuthProvider } from '@/lib/auth';
@@ -70,6 +71,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Header categories={categories} />
             {children}
             <Footer />
+            <CartNotice />
           </CartProvider>
         </AuthProvider>
       </body>

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
-import { useCart } from '@/lib/cart';
+import { useCart, type CartItem } from '@/lib/cart';
 import { useAuth } from '@/lib/auth';
 import Link from 'next/link';
 import { MESSENGER_URL } from '@/lib/messenger';
@@ -13,13 +13,15 @@ const GOVERNORATS = Object.keys(LOCATIONS).sort();
 type Step = 1 | 2 | 3 | 4;
 
 export default function CheckoutPage() {
-  const { items: cartItems, count: cartCount, total: cartSubtotal, clearCart } = useCart();
+  const { items: cartItems, count: cartCount, total: cartSubtotal, clearCart, ready } = useCart();
   const { user, saveOrder } = useAuth();
   const [step, setStep] = useState<Step>(2);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [orderId, setOrderId] = useState('');
+  /* Copie de la commande pour l'ecran de confirmation (le panier est vide a ce moment-la) */
+  const [confirmed, setConfirmed] = useState<{ items: CartItem[]; total: number } | null>(null);
 
   /* Form state */
   const [prenom, setPrenom] = useState('');
@@ -34,6 +36,9 @@ export default function CheckoutPage() {
   const [note, setNote] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [editingAddress, setEditingAddress] = useState(false);
+
+  // Toujours afficher le haut de la page : a l'arrivee et a la confirmation
+  useEffect(() => { window.scrollTo(0, 0); }, [step]);
 
   // Pré-remplir depuis le profil utilisateur connecté
   useEffect(() => {
@@ -199,6 +204,7 @@ export default function CheckoutPage() {
     });
 
     setOrderId(newOrderId);
+    setConfirmed({ items: cartItems, total });
     clearCart();
 
     /* ── Email de confirmation (si email fourni) ── */
@@ -221,6 +227,10 @@ export default function CheckoutPage() {
     setStep(4);
   }
 
+  if (!ready) {
+    return <main style={{ minHeight: '60vh', textAlign: 'center', paddingTop: 80, color: '#888' }}>Chargement…</main>;
+  }
+
   if (cartCount === 0 && step !== 4) {
     return (
       <main style={{ maxWidth: 520, margin: '80px auto', padding: '0 16px', textAlign: 'center' }}>
@@ -238,8 +248,12 @@ export default function CheckoutPage() {
     return (
       <>
         <style>{`
-          .ck-success { max-width: 520px; margin: 60px auto; padding: 0 16px; text-align: center; }
-          .ck-check { width: 80px; height: 80px; border-radius: 50%; background: #dcfce7; color: #16a34a; font-size: 36px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
+          .ck-success { max-width: 520px; margin: 28px auto 20px; padding: 0 16px; text-align: center; }
+          .ck-s-recap { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.07); padding: 6px 16px; margin-bottom: 20px; text-align: left; }
+          .ck-s-line { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; font-size: 13px; color: #444; border-bottom: 1px solid #f3f3f3; }
+          .ck-s-line span:last-child { white-space: nowrap; font-weight: 700; }
+          .ck-s-line.ck-s-pay { border-bottom: 0; font-size: 15px; font-weight: 900; color: #111; }
+          .ck-check { width: 64px; height: 64px; border-radius: 50%; background: #dcfce7; color: #16a34a; font-size: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
           .ck-s-title { font-size: 26px; font-weight: 900; margin-bottom: 12px; }
           .ck-s-ref { background: #F8F9FA; border-radius: 10px; padding: 14px 20px; font-size: 14px; color: #555; margin-bottom: 16px; }
           .ck-s-ref strong { color: #111; font-size: 18px; }
@@ -256,10 +270,19 @@ export default function CheckoutPage() {
           </div>
           <div className="ck-s-info">
             Notre équipe vous contactera au <strong>+216 {tel}</strong> pour confirmer la livraison.<br />
-            Vous payez à la réception de votre colis.
+            Livraison en 48–72h. Vous payez à la réception de votre colis.
           </div>
+          {confirmed && (
+            <div className="ck-s-recap">
+              {confirmed.items.map(i => (
+                <div key={i.id} className="ck-s-line"><span>{i.qty} × {i.name}</span><span>{(i.price * i.qty).toFixed(3)} TND</span></div>
+              ))}
+              <div className="ck-s-line"><span>Livraison</span><span>{deliveryPrice.toFixed(3)} TND</span></div>
+              <div className="ck-s-line ck-s-pay"><span>À payer à la livraison</span><span>{confirmed.total.toFixed(3)} TND</span></div>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/account" className="ck-s-btn">Suivre ma commande →</a>
+            <a href={user ? '/account' : `/suivi-commande?commande=${orderId}`} className="ck-s-btn">Suivre ma commande →</a>
             <a href="/shop" style={{ display: 'inline-block', background: '#F8F9FA', color: '#111', fontWeight: 800, padding: '14px 28px', borderRadius: 10, textDecoration: 'none', fontSize: 15 }}>Continuer mes achats</a>
           </div>
         </div>
@@ -342,6 +365,7 @@ export default function CheckoutPage() {
         .ck-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .ck-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
         .ck-field:last-child { margin-bottom: 0; }
+        .ck-row2 .ck-field { margin-bottom: 12px; }
         .ck-label { font-size: 12px; font-weight: 700; color: #555; }
         .ck-input { border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; transition: border-color .12s; background: #fff; width: 100%; }
         .ck-input:focus { border-color: #FFB800; }
@@ -399,8 +423,9 @@ export default function CheckoutPage() {
         .ck-badge-item { font-size: 12px; color: #888; font-weight: 600; text-align: center; }
 
         /* Mobile summary toggle */
-        .ck-mobile-summary { display: none; background: #FFFCEF; border-bottom: 1px solid #FFE08A; padding: 12px 16px; cursor: pointer; font-size: 14px; font-weight: 700; color: #111; align-items: center; justify-content: space-between; margin-bottom: 16px; border-radius: 12px; }
-        .ck-mobile-summary-total { color: #FFB800; }
+        .ck-summary-top { display: none; margin-bottom: 16px; }
+        .ck-mobile-summary { display: none; width: 100%; font-family: inherit; text-align: left; background: #FFFCEF; border: 1px solid #FFE08A; padding: 12px 16px; cursor: pointer; font-size: 14px; font-weight: 700; color: #111; align-items: center; justify-content: space-between; margin-bottom: 16px; border-radius: 12px; }
+        .ck-mobile-summary-total { color: #111; font-weight: 900; white-space: nowrap; }
 
         /* Mobile fixed CTA */
         .ck-mobile-cta { display: none; }
@@ -416,7 +441,9 @@ export default function CheckoutPage() {
         @media (max-width: 640px) {
           .ck-wrap { padding: 0 12px 80px; }
           .ck-row2 { grid-template-columns: minmax(0, 1fr); }
-          .ck-mobile-summary { display: flex; }
+          .ck-mobile-summary { display: flex; gap: 10px; }
+          .ck-summary-top { display: block; }
+          .ck-layout > .ck-summary { display: none; }
           .ck-mobile-cta { display: block; position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 14px; background: #fff; border-top: 1px solid #ececec; box-shadow: 0 -4px 12px rgba(0,0,0,.08); z-index: 50; }
           .ck-cta { display: none; }
           .ck-input, .ck-select, .ck-textarea, .ck-tel-input { font-size: 16px; min-height: 46px; }
@@ -449,10 +476,11 @@ export default function CheckoutPage() {
         </div>
 
         {/* Mobile summary toggle */}
-        <div className="ck-mobile-summary" onClick={() => setSummaryOpen(!summaryOpen)}>
-          <span>Voir le récapitulatif ({cartCount} article{cartCount > 1 ? 's' : ''}) {summaryOpen ? '▲' : '▼'}</span>
+        <button type="button" className="ck-mobile-summary" aria-expanded={summaryOpen} onClick={() => setSummaryOpen(!summaryOpen)}>
+          <span>{summaryOpen ? 'Masquer' : 'Voir'} le récapitulatif {summaryOpen ? '▲' : '▼'}</span>
           <span className="ck-mobile-summary-total">{total.toFixed(3)} TND</span>
-        </div>
+        </button>
+        {summaryOpen && <div className="ck-summary-top">{orderSummary}</div>}
 
         <div className="ck-layout">
           {/* Left column — form */}

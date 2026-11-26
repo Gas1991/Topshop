@@ -155,7 +155,7 @@ button { font-family: inherit; cursor: pointer; }
 .cart-btn .top { color: #ffcd3d; }
 .cart-btn .bot { color: #fff; }
 .cart-badge {
-  position: absolute; top: 2px; right: 4px;
+  position: absolute; top: -9px; right: -10px;
   background: var(--yellow); color: #111;
   font-size: 10px; font-weight: 800;
   height: 18px; min-width: 18px; padding: 0 5px;
@@ -584,27 +584,27 @@ button { font-family: inherit; cursor: pointer; }
 }
 .footer .bottom .links { display: flex; gap: 18px; }
 
-/* Toast for add to cart */
-.toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: #111; color: #fff;
-  padding: 12px 18px; border-radius: 10px;
-  font-size: 13px; font-weight: 600;
-  display: flex; align-items: center; gap: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.3);
-  z-index: 100;
-  animation: toast-in .25s ease;
+/* Notification "ajoute au panier" */
+/* en bas : ne cache ni l'icone panier ni les boutons d'achat */
+.cn-zone { position: fixed; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); right: 12px; z-index: 200; width: min(380px, calc(100vw - 24px)); pointer-events: none; }
+.cn {
+  pointer-events: auto; background: #fff; color: #111; border: 1px solid #ececec; border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(0,0,0,.22); padding: 12px; animation: cn-in .25s ease;
 }
-.toast .ic {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--yellow); color: #111;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-weight: 900;
-}
-@keyframes toast-in {
-  from { opacity: 0; transform: translate(-50%, 10px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
-}
+.cn-head { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #15803d; }
+.cn-ic { width: 24px; height: 24px; border-radius: 50%; background: #16a34a; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+.cn-close { margin-left: auto; width: 44px; height: 44px; margin-block: -10px; margin-right: -8px; border: 0; background: transparent; color: #666; font-size: 18px; cursor: pointer; }
+.cn-body { display: flex; gap: 12px; align-items: center; margin-top: 10px; }
+.cn-body img { width: 56px; height: 56px; object-fit: contain; border-radius: 8px; background: #F8F9FA; border: 1px solid #ececec; flex-shrink: 0; }
+.cn-name { font-size: 13px; font-weight: 600; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cn-price { font-size: 14px; font-weight: 900; margin-top: 3px; }
+.cn-total { font-size: 12px; color: #666; margin-top: 10px; padding-top: 8px; border-top: 1px solid #f0f0f0; }
+.cn-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.cn-actions a { display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 10px; font-size: 14px; font-weight: 800; text-decoration: none; }
+.cn-view { border: 2px solid #111; color: #111; }
+.cn-buy { background: var(--yellow); color: #111; }
+@keyframes cn-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .cn { animation: none; } }
 
 /* Subcategory nav (under main category bar, optional) */
 .subnav {
