@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Qui sommes-nous — Topshop.tn',
-  description: 'Topshop.tn, boutique en ligne en Tunisie avec paiement à la livraison.',
+  title: 'Qui sommes-nous — shop.toprix.tn',
+  description: 'shop.toprix.tn, boutique en ligne en Tunisie avec paiement à la livraison.',
   alternates: { canonical: '/a-propos' },
 };
 

@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="inner">
         <div className="grid">
           <div className="brand-block">
-            <div className="logo">topshop<span className="dot">.</span></div>
+            <div className="logo"><span>shop<span className="dot">.</span>toprix<span className="dot">.</span>tn</span></div>
             <p style={{ marginTop: 14 }}>
               Votre boutique en ligne en Tunisie : maison, cuisine, mode, électronique
               et plus, livrés chez vous.
@@ -26,7 +26,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h4>À propos de Topshop</h4>
+            <h4>À propos de shop.toprix.tn</h4>
             <ul>
               <li><Link href="/a-propos">Qui sommes-nous</Link></li>
               <li><Link href="/shop">Nos produits</Link></li>
@@ -44,7 +44,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="bottom">
-          <div>© {new Date().getFullYear()} Topshop.tn — Tous droits réservés. Tunisie.</div>
+          <div>© {new Date().getFullYear()} shop.toprix.tn — Tous droits réservés. Tunisie.</div>
           <div className="links">
             <Link href="/confidentialite">Confidentialité</Link>
             <Link href="/retours">Conditions de retour</Link>

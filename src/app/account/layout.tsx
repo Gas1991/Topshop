@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Mon compte — Topshop.tn',
-  description: 'Votre espace client Topshop.tn.',
+  title: 'Mon compte — shop.toprix.tn',
+  description: 'Votre espace client shop.toprix.tn.',
   robots: { index: false, follow: true },
 };
 

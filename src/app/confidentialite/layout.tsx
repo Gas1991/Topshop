@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Politique de confidentialité — Topshop.tn',
+  title: 'Politique de confidentialité — shop.toprix.tn',
   description: 'Protection de vos données personnelles.',
   alternates: { canonical: '/confidentialite' },
 };

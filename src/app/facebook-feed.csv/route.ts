@@ -105,7 +105,7 @@ function toRow(p: WCProduct): string[] | null {
     `${priceVal.toFixed(2)} TND`,
     `${SITE}/produit/${p.slug}`,
     img,
-    'Topshop',
+    'shop.toprix.tn',
   ];
 }
 

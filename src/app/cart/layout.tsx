@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Mon panier — Topshop.tn',
-  description: 'Votre panier Topshop.tn.',
+  title: 'Mon panier — shop.toprix.tn',
+  description: 'Votre panier shop.toprix.tn.',
   robots: { index: false, follow: true },
 };
 

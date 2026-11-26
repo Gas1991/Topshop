@@ -29,8 +29,8 @@ export default function Header({ categories = [] }: HeaderProps) {
       <div className="utility-bar">
         <div className="inner">
           <div className="left">
-            <span className="pill">TOPSHOP TN</span>
-            <span>Livraison 🇹🇳 partout en Tunisie</span>
+            <span className="pill">SHOP.TOPRIX.TN</span>
+            <span>Livraison partout en Tunisie</span>
           </div>
           <div className="right">
             <a href="/contact">Aide &amp; Service Client</a>
@@ -46,7 +46,7 @@ export default function Header({ categories = [] }: HeaderProps) {
         <div className="row">
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Link className="logo" href="/">
-              topshop<span className="dot">.</span><small>tn</small>
+              <span>shop<span className="dot">.</span>toprix<span className="dot">.</span>tn</span>
             </Link>
           </div>
 

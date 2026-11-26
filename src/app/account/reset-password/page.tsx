@@ -36,7 +36,7 @@ function ResetForm() {
 
   return (
     <>
-      <div className="auth-logo">topshop<span>.</span>tn</div>
+      <div className="auth-logo"><span>shop<span>.</span>toprix<span>.</span>tn</span></div>
       <div className="auth-title">🔑 Nouveau mot de passe</div>
       <div className="auth-sub">Choisissez un mot de passe sécurisé (min. 6 caractères).</div>
 

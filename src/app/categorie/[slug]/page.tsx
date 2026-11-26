@@ -24,7 +24,7 @@ export async function generateMetadata({
   const category = await api.categories.bySlug(slug).catch(() => null);
   if (!category) return {};
   return {
-    title: `${category.name}${page > 1 ? ` — page ${page}` : ''} — Topshop.tn`,
+    title: `${category.name}${page > 1 ? ` — page ${page}` : ''} — shop.toprix.tn`,
     description: `Découvrez nos produits ${category.name} en Tunisie. Livraison partout dans le pays, paiement à la livraison.`,
     alternates: { canonical: `/categorie/${slug}${page > 1 ? `?page=${page}` : ''}` },
   };

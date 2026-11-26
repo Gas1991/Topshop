@@ -67,7 +67,7 @@ export default function LoginPage() {
 
       <div className="auth-wrap">
         <div className="auth-card">
-          <div className="auth-logo">topshop<span>.</span>tn</div>
+          <div className="auth-logo"><span>shop<span>.</span>toprix<span>.</span>tn</span></div>
           <div className="auth-title">Connexion</div>
           <div className="auth-sub">Accédez à votre espace personnel</div>
 

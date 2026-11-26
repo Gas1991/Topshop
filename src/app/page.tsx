@@ -10,7 +10,7 @@ const SITE_LD = [
   {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Topshop.tn',
+    name: 'shop.toprix.tn',
     url: SITE_URL,
     sameAs: [
       'https://www.facebook.com/profile.php?id=61594466673346',
@@ -21,7 +21,7 @@ const SITE_LD = [
   {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Topshop.tn',
+    name: 'shop.toprix.tn',
     url: SITE_URL,
     potentialAction: {
       '@type': 'SearchAction',

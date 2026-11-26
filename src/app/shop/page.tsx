@@ -14,7 +14,7 @@ export async function generateMetadata({
   const filtre = !!(params.s || params.cat || params.on_sale);
   const titre = params.s ? `Recherche « ${params.s} »` : params.on_sale ? 'Offres et promotions' : 'Tous les produits';
   return {
-    title: `${titre}${page > 1 ? ` — page ${page}` : ''} — Topshop.tn`,
+    title: `${titre}${page > 1 ? ` — page ${page}` : ''} — shop.toprix.tn`,
     description: 'Tous nos produits pour la maison, la cuisine, la mode et l’électronique, livrés partout en Tunisie. Paiement à la livraison.',
     alternates: filtre ? undefined : { canonical: page > 1 ? `/shop?page=${page}` : '/shop' },
     robots: filtre ? { index: false, follow: true } : undefined,

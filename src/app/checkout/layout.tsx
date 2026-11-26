@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Finaliser ma commande — Topshop.tn',
+  title: 'Finaliser ma commande — shop.toprix.tn',
   description: 'Commande avec paiement à la livraison.',
   robots: { index: false, follow: true },
 };

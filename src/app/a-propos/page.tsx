@@ -76,7 +76,7 @@ export default function AProposPage() {
           <div className="ap-story-text">
             <h2>Qui sommes-nous ?</h2>
             <p>
-              Topshop est né d&apos;une idée simple : vous permettre de commander en ligne des
+              shop.toprix.tn est né d&apos;une idée simple : vous permettre de commander en ligne des
               produits pour la maison, la cuisine, la mode et l&apos;électronique, réunis en un seul endroit.
             </p>
             <p>

@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://shop.toprix.tn';
-const FROM = process.env.SMTP_FROM || 'Topshop.tn <toprix@oven-cleaner.serv00.net>';
+const FROM = process.env.SMTP_FROM || 'shop.toprix.tn <toprix@oven-cleaner.serv00.net>';
 const YEAR = new Date().getFullYear();
 
 /* ── Shared layout wrappers ─────────────────────────────────────── */
@@ -27,7 +27,7 @@ function wrap(content: string) {
 
 <!-- Header -->
 <tr><td style="background:#FFB800;border-radius:14px 14px 0 0;padding:24px 32px;text-align:center;">
-  <div style="font-size:26px;font-weight:900;color:#111;">Topshop.tn</div>
+  <div style="font-size:26px;font-weight:900;color:#111;">shop.toprix.tn</div>
   <div style="font-size:12px;color:#5a3e00;margin-top:3px;">Votre boutique high-tech en Tunisie</div>
 </td></tr>
 
@@ -38,7 +38,7 @@ function wrap(content: string) {
 
 <!-- Footer -->
 <tr><td style="background:#F8F9FA;border-radius:0 0 14px 14px;padding:18px 32px;text-align:center;border-top:1px solid #ececec;">
-  <p style="font-size:12px;color:#aaa;margin:0;">© ${YEAR} Topshop.tn — Tous droits réservés</p>
+  <p style="font-size:12px;color:#aaa;margin:0;">© ${YEAR} shop.toprix.tn — Tous droits réservés</p>
   <p style="font-size:12px;color:#aaa;margin:5px 0 0;">
     <a href="${SITE}/contact" style="color:#FFB800;text-decoration:none;">Contact</a> ·
     <a href="${SITE}/livraison" style="color:#FFB800;text-decoration:none;">Livraison</a> ·
@@ -146,7 +146,7 @@ interface WelcomePayload {
 
 function htmlWelcome(p: WelcomePayload): string {
   return wrap(`
-    <h1 style="font-size:22px;font-weight:900;color:#111;margin:0 0 8px;">🎉 Bienvenue sur Topshop.tn !</h1>
+    <h1 style="font-size:22px;font-weight:900;color:#111;margin:0 0 8px;">🎉 Bienvenue sur shop.toprix.tn !</h1>
     <p style="font-size:15px;color:#555;margin:0 0 20px;">Bonjour <strong>${p.firstName} ${p.lastName}</strong>,<br>Votre compte a été créé avec succès.</p>
 
     <div style="background:#F8F9FA;border-radius:12px;padding:20px;margin-bottom:20px;">
@@ -237,7 +237,7 @@ export async function POST(req: NextRequest) {
 
     if (type === 'order_confirmation') {
       const p = body as OrderConfirmPayload;
-      subject = `✅ Commande #${p.orderId} confirmée — Topshop.tn`;
+      subject = `✅ Commande #${p.orderId} confirmée — shop.toprix.tn`;
       html    = htmlOrderConfirmation(p);
     } else if (type === 'order_status') {
       const p = body as OrderStatusPayload;
@@ -246,11 +246,11 @@ export async function POST(req: NextRequest) {
       html    = htmlOrderStatus(p);
     } else if (type === 'welcome') {
       const p = body as WelcomePayload;
-      subject = `🎉 Bienvenue sur Topshop.tn, ${p.firstName} !`;
+      subject = `🎉 Bienvenue sur shop.toprix.tn, ${p.firstName} !`;
       html    = htmlWelcome(p);
     } else if (type === 'password_reset') {
       const p = body as PasswordResetPayload;
-      subject = '🔒 Réinitialisation de votre mot de passe — Topshop.tn';
+      subject = '🔒 Réinitialisation de votre mot de passe — shop.toprix.tn';
       html    = htmlPasswordReset(p);
     } else if (type === 'contact') {
       const p = body as ContactPayload;

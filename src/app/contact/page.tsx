@@ -15,7 +15,7 @@ export default function ContactPage() {
   const faqs = [
     {
       q: 'Comment suivre ma commande ?',
-      a: 'Notre équipe vous contacte pour confirmer votre commande. Vous pouvez aussi vous connecter à votre compte Topshop et consulter la section "Mes commandes".',
+      a: 'Notre équipe vous contacte pour confirmer votre commande. Vous pouvez aussi vous connecter à votre compte shop.toprix.tn et consulter la section "Mes commandes".',
     },
     {
       q: 'Quel est le délai de livraison ?',

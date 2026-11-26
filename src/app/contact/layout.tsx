@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contact — Topshop.tn',
-  description: 'Contactez le service client Topshop.tn.',
+  title: 'Contact — shop.toprix.tn',
+  description: 'Contactez le service client shop.toprix.tn.',
   alternates: { canonical: '/contact' },
 };
 

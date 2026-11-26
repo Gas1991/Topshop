@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
 
       <div className="auth-wrap">
         <div className="auth-card">
-          <div className="auth-logo">topshop<span>.</span>tn</div>
+          <div className="auth-logo"><span>shop<span>.</span>toprix<span>.</span>tn</span></div>
           <div className="auth-title">🔒 Mot de passe oublié</div>
           <div className="auth-sub">Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.</div>
 

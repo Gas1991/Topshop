@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Retours et remboursements — Topshop.tn',
+  title: 'Retours et remboursements — shop.toprix.tn',
   description: 'Conditions de retour et de remboursement.',
   alternates: { canonical: '/retours' },
 };

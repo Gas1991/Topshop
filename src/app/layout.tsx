@@ -12,9 +12,9 @@ import { SITE_URL } from '@/lib/seo';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'Topshop.tn — Boutique en ligne en Tunisie',
+  title: 'shop.toprix.tn — Boutique en ligne en Tunisie',
   description: 'Maison, cuisine, mode, électronique et plus : commandez en ligne, livraison partout en Tunisie et paiement à la livraison.',
-  openGraph: { siteName: 'Topshop.tn', locale: 'fr_TN', type: 'website' },
+  openGraph: { siteName: 'shop.toprix.tn', locale: 'fr_TN', type: 'website' },
   verification: {
     other: {
       'facebook-domain-verification': '49fmoj954lfdcr8pelq6cgsszapr6m',

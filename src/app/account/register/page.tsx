@@ -90,7 +90,7 @@ export default function RegisterPage() {
 
       <div className="auth-wrap">
         <div className="auth-card">
-          <div className="auth-logo">topshop<span>.</span>tn</div>
+          <div className="auth-logo"><span>shop<span>.</span>toprix<span>.</span>tn</span></div>
           <div className="auth-title">Créer un compte</div>
           <div className="auth-sub">Rejoignez des milliers de clients satisfaits</div>
 

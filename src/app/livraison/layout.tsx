@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Livraison — Topshop.tn',
+  title: 'Livraison — shop.toprix.tn',
   description: 'Tarif et délais de livraison partout en Tunisie.',
   alternates: { canonical: '/livraison' },
 };
